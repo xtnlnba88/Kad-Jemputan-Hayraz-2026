@@ -240,6 +240,117 @@
 
         // --- COMPONENTS ---
 
+        // --- NEW COMPONENTS ---
+
+        const CountdownTimer = () => {
+            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+            useEffect(() => {
+                const targetDate = new Date("2026-02-15T20:00:00").getTime();
+
+                const interval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = targetDate - now;
+
+                    if (distance < 0) {
+                        clearInterval(interval);
+                    } else {
+                        setTimeLeft({
+                            days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                            hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                            minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+                            seconds: Math.floor((distance % (1000 * 60)) / 1000)
+                        });
+                    }
+                }, 1000);
+
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="flex justify-center space-x-4 my-6">
+                    {Object.entries(timeLeft).map(([unit, value]) => (
+                        <div key={unit} className="text-center">
+                            <div className="bg-boboiboy-black border-2 border-boboiboy-yellow w-16 h-16 flex items-center justify-center rounded-lg shadow-[0_0_10px_#FEC601]">
+                                <span className="text-2xl font-comic text-white">{value}</span>
+                            </div>
+                            <span className="text-xs text-gray-400 uppercase mt-1 block">{unit}</span>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const GuestbookSection = () => {
+            const [wishes, setWishes] = useState([
+                { name: "Yaya", message: "Selamat Hari Jadi Hayraz! Semoga kekal hebat macam Boboiboy!" },
+                { name: "Gopal", message: "Jangan lupa simpan makanan untuk aku dey! Hahaha!" },
+                { name: "Fang", message: "Latihan tempur diteruskan! Happy Birthday!" }
+            ]);
+            const [name, setName] = useState("");
+            const [message, setMessage] = useState("");
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                if (!name || !message) return;
+                const newWish = { name, message };
+                setWishes([newWish, ...wishes]);
+                setName("");
+                setMessage("");
+            };
+
+            return (
+                <section className="py-16 px-4 bg-boboiboy-black relative border-t-4 border-boboiboy-yellow">
+                    <h2 className="text-3xl font-comic text-center text-boboiboy-yellow mb-8 comic-text-shadow">
+                        MISI: TINGGALKAN JEJAK
+                    </h2>
+
+                    {/* Form */}
+                    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4 mb-12 bg-gray-900 p-6 rounded-lg border-2 border-gray-700">
+                        <div>
+                            <label className="block text-boboiboy-orange font-comic mb-1">NAMA EJEN</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-black text-white border-2 border-gray-600 p-2 rounded focus:border-boboiboy-yellow focus:outline-none"
+                                placeholder="Cth: Ejen Ali"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-boboiboy-orange font-comic mb-1">UCAPAN MISI</label>
+                            <textarea
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                className="w-full bg-black text-white border-2 border-gray-600 p-2 rounded h-24 focus:border-boboiboy-yellow focus:outline-none"
+                                placeholder="Tulis ucapan power korang kat sini..."
+                            ></textarea>
+                        </div>
+                        <button type="submit" className="w-full bg-boboiboy-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded border-2 border-white shadow-[4px_4px_0px_#fff] transform active:translate-y-1 active:shadow-none transition">
+                            HANTAR DATA
+                        </button>
+                    </form>
+
+                    {/* List */}
+                    <div className="max-w-md mx-auto space-y-4">
+                        {wishes.map((wish, idx) => (
+                            <div key={idx} className="bg-white text-black p-4 rounded-lg shadow-lg border-l-8 border-boboiboy-blue transform transition hover:scale-105">
+                                <div className="flex items-center space-x-2 mb-2">
+                                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                        <i className="fas fa-user-astronaut text-gray-600"></i>
+                                    </div>
+                                    <span className="font-comic text-lg uppercase font-bold text-boboiboy-blue">{wish.name}</span>
+                                </div>
+                                <p className="font-mono text-sm text-gray-800">"{wish.message}"</p>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        // --- UPDATED EXISTING COMPONENTS ---
+
         const MusicPlayer = ({ isPlaying, toggleMusic }) => {
             return (
                 <button
@@ -349,7 +460,7 @@
             );
         };
 
-        const HeroSection = () => {
+        const HeroSection = ({ onScrollToDetails }) => {
             const titleRef = useRef(null);
 
             useEffect(() => {
@@ -360,41 +471,46 @@
             }, []);
 
             return (
-                <section className="relative min-h-screen flex flex-col items-center justify-center text-center p-4 overflow-hidden">
-                    <div className="relative z-20 w-full max-w-md mt-10">
-                        <div className="mb-4 inline-block bg-gradient-to-r from-red-600 to-orange-600 text-white font-bold py-1 px-6 transform -rotate-2 comic-border">
+                <section
+                    onClick={onScrollToDetails}
+                    className="relative min-h-screen flex flex-col items-center justify-center text-center p-4 overflow-hidden cursor-pointer group"
+                >
+                    <div className="relative z-20 w-full max-w-md">
+                        {/* Text: Transparent bg, Clean Shadow */}
+                        <div className="mb-2 font-comic text-boboiboy-orange text-xl tracking-widest animate-pulse">
                             MISI: MAKAN-MAKAN!
                         </div>
 
-                        <h1 ref={titleRef} className="text-6xl md:text-8xl font-comic text-boboiboy-yellow comic-text-shadow leading-none mb-4 uppercase glitch" data-text="HAYRAZ MIKYLE">
+                        <h1 ref={titleRef} className="text-7xl md:text-8xl font-comic text-boboiboy-yellow leading-none mb-6 uppercase glitch" data-text="HAYRAZ MIKYLE" style={{ textShadow: '4px 4px 0 #000, -2px -2px 0 #FF6B00' }}>
                             HAYRAZ<br />MIKYLE
                         </h1>
 
-                        <div className="my-8 relative group perspective-1000">
-                            <div className="absolute inset-0 bg-blue-500 blur-xl opacity-50 rounded-full animate-pulse"></div>
-                            <img
-                                src="https://static.wikia.nocookie.net/boboiboy/images/1/13/BoBoiBoy_Movie_2_on_Astro_First.jpg/revision/latest"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Hayraz&backgroundColor=ffdfbf&clothing=superhero";
-                                }}
-                                alt="Hayraz Mikyle"
-                                className="relative w-72 h-72 object-cover mx-auto rounded-xl border-4 border-yellow-400 shadow-[0_0_20px_#FEC601] transform transition-transform group-hover:scale-105 bg-gray-900"
-                            />
+                        <div className="my-4 relative perspective-1000">
+                            {/* Floating Animation for Image */}
+                            <div className="animate-float">
+                                <img
+                                    src="https://static.wikia.nocookie.net/boboiboy/images/1/13/BoBoiBoy_Movie_2_on_Astro_First.jpg/revision/latest"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Hayraz&backgroundColor=ffdfbf&clothing=superhero";
+                                    }}
+                                    alt="Hayraz Mikyle"
+                                    className="relative w-72 h-72 object-cover mx-auto rounded-xl border-4 border-yellow-400 shadow-[0_0_30px_#FEC601] bg-gray-900"
+                                />
+                            </div>
                             <div className="absolute -bottom-6 -right-2 bg-red-600 text-white font-comic text-3xl py-2 px-6 border-4 border-white transform rotate-6 shadow-lg">
                                 6 TAHUN!
                             </div>
                         </div>
 
-                        <div className="bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-lg transform skew-x-[-10deg]">
-                            <p className="text-xl font-bold text-white transform skew-x-[10deg]">
-                                JOM PARTY &amp; MAIN GAME!
+                        <div className="mt-8 space-y-2">
+                            <p className="text-xl font-bold text-white font-comic tracking-wide">
+                                KUASA ELEMENTAL TELAH DIAKTIFKAN!
+                            </p>
+                            <p className="text-sm text-gray-400 font-mono animate-bounce mt-4">
+                                [ KLIK SKRIN UNTUK AKSES MISI ]
                             </p>
                         </div>
-                    </div>
-
-                    <div className="absolute bottom-8 animate-bounce">
-                        <i className="fas fa-chevron-down text-3xl text-boboiboy-yellow opacity-70"></i>
                     </div>
                 </section>
             );
@@ -408,21 +524,32 @@
             ];
 
             return (
-                <section className="py-20 px-4 relative z-20">
-                    <h2 className="text-4xl font-comic text-center text-white mb-12 tech-title glitch" data-text="INFO MISI">
-                        INFO MISI
+                <section className="py-20 px-4 relative z-20 bg-black">
+                    <h2 className="text-4xl font-comic text-center text-white mb-2 tech-title" style={{ textShadow: '2px 2px 0 #FF6B00' }}>
+                        INFO MISI RAHSIA
                     </h2>
 
-                    <div className="max-w-md mx-auto space-y-6">
+                    <CountdownTimer />
+
+                    <div className="max-w-md mx-auto space-y-4 mt-8">
                         {details.map((item, idx) => (
-                            <div key={idx} className="bg-gray-900/80 backdrop-blur border-l-4 border-yellow-500 p-6 flex items-center space-x-6 hover:bg-gray-800 transition-colors shadow-lg rounded-r-xl">
+                            <div key={idx} className="bg-gray-900 border border-gray-700 p-6 flex items-center space-x-6 rounded-lg">
                                 <i className={`fas ${item.icon} ${item.color} text-3xl w-10 text-center`}></i>
                                 <div>
-                                    <p className="text-xs text-gray-400 font-mono tracking-widest">{item.label}</p>
-                                    <p className="text-2xl font-bold text-white uppercase font-comic">{item.value}</p>
+                                    <p className="text-xs text-gray-500 font-mono tracking-widest mb-1">{item.label}</p>
+                                    <p className="text-2xl font-bold text-white uppercase font-comic tracking-wide">{item.value}</p>
                                 </div>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="text-center mt-8">
+                        <p className="text-boboiboy-yellow font-comic text-xl">
+                            "DATANG JANGAN TAK DATANG!"
+                        </p>
+                        <p className="text-white text-sm mt-2 font-mono">
+                            Kehadiran anda melengkapkan kuasa kami!
+                        </p>
                     </div>
                 </section>
             );
@@ -431,10 +558,10 @@
         const VideoSection = () => {
             return (
                 <section className="py-16 px-4 relative">
-                    <div className="max-w-md mx-auto relative z-10 p-1 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow-[0_0_20px_#00ffff]">
+                    <div className="max-w-md mx-auto relative z-10 p-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-lg shadow-[0_0_20px_#ff0000]">
                         <div className="bg-black p-4 rounded-md">
-                            <h2 className="text-3xl font-comic text-center text-white mb-6 glitch" data-text="ZON BLIZZARD">
-                                ZON BLIZZARD
+                            <h2 className="text-3xl font-comic text-center text-white mb-6" style={{ textShadow: '2px 2px 0 #000' }}>
+                                DATA PERISIKAN
                             </h2>
                             <div className="aspect-video bg-gray-800 flex items-center justify-center relative overflow-hidden group rounded-lg border-2 border-gray-700">
                                 <img
@@ -450,6 +577,9 @@
                                     <i className="fas fa-play text-3xl text-white pl-1"></i>
                                 </div>
                             </div>
+                            <p className="text-center text-gray-400 text-xs mt-4 font-mono">
+                                KLIK PLAY UNTUK ANALISIS VIDEO
+                            </p>
                         </div>
                     </div>
                 </section>
@@ -478,7 +608,7 @@
             return (
                 <footer className="bg-black py-8 text-center border-t border-gray-800">
                     <p className="font-comic text-yellow-500 text-xl tracking-widest">TERBAIKKK!</p>
-                    <p className="text-xs text-gray-600 mt-2 font-mono">&copy; 2026 HAYRAZ MISSION CONTROL</p>
+                    <p className="text-xs text-gray-600 mt-2 font-mono">&copy; 2026 Markas Pengurusan Hayraz</p>
                 </footer>
             );
         };
@@ -487,6 +617,7 @@
             const [hasStarted, setHasStarted] = useState(false);
             const [isPlaying, setIsPlaying] = useState(false);
             const audioRef = useRef(null);
+            const detailsRef = useRef(null);
 
             const handleStart = () => {
                 setHasStarted(true);
@@ -506,6 +637,12 @@
                 setIsPlaying(!isPlaying);
             };
 
+            const handleScrollToDetails = () => {
+                if (detailsRef.current) {
+                    detailsRef.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
             return (
                 <div className="min-h-screen relative font-body selection:bg-yellow-500 selection:text-black bg-[#0a0a0a]">
                     {!hasStarted ? (
@@ -518,10 +655,14 @@
                             <ParticleSystem />
 
                             {/* Main Content */}
-                            <HeroSection />
-                            <DetailsSection />
+                            <HeroSection onScrollToDetails={handleScrollToDetails} />
+
+                            <div ref={detailsRef}>
+                                <DetailsSection />
+                            </div>
+
                             <VideoSection />
-                            <WishesSection />
+                            <GuestbookSection />
                             <Footer />
 
                             <MusicPlayer isPlaying={isPlaying} toggleMusic={handleMusicToggle} />
