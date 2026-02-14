@@ -660,32 +660,161 @@
             );
         };
 
-        const VideoSection = ({ config }) => {
+        const InteractiveMission = ({ config }) => {
+            const [activeTab, setActiveTab] = useState('quiz'); // quiz or scanner
+            const [quizScore, setQuizScore] = useState(0);
+            const [quizCompleted, setQuizCompleted] = useState(false);
+            const [elementResult, setElementResult] = useState(null);
+            const [isScanning, setIsScanning] = useState(false);
+
+            // QUIZ DATA
+            const questions = [
+                {
+                    q: "Siapakah Ejen Hari Jadi hari ini?",
+                    options: ["Ejen Ali", "Ejen Hayraz", "Ejen Bakar"],
+                    correct: 1
+                },
+                {
+                    q: "Berapakah umur Ejen Hayraz tahun ini?",
+                    options: ["5 Tahun", "6 Tahun", "7 Tahun"],
+                    correct: 1
+                },
+                {
+                    q: "Apakah kuasa elemen kegemaran Ejen Hayraz?",
+                    options: ["Api", "Ais / Blizzard", "Tanah"],
+                    correct: 1 // Assuming Blizzard based on image
+                }
+            ];
+
+            const [currentQ, setCurrentQ] = useState(0);
+
+            const handleAnswer = (index) => {
+                if (index === questions[currentQ].correct) {
+                    if (currentQ < questions.length - 1) {
+                        setCurrentQ(currentQ + 1);
+                    } else {
+                        setQuizScore(quizScore + 1);
+                        setQuizCompleted(true);
+                        // Auto switch to scanner after short delay
+                        setTimeout(() => setActiveTab('scanner'), 1500);
+                    }
+                } else {
+                    alert("Akses Ditolak! Sila cuba lagi.");
+                }
+            };
+
+            // SCANNER LOGIC
+            const elements = [
+                { name: "HALILINTAR", color: "text-red-500", icon: "fa-bolt", desc: "Pantas & Tangkas!" },
+                { name: "SOLAR", color: "text-yellow-200", icon: "fa-sun", desc: "Bijak & Bersinar!" },
+                { name: "AIS", color: "text-cyan-400", icon: "fa-snowflake", desc: "Tenang & Cool!" },
+                { name: "GEMPA", color: "text-yellow-600", icon: "fa-mountain", desc: "Kuat & Tabah!" },
+                { name: "TOPAN", color: "text-blue-400", icon: "fa-wind", desc: "Ceria & Bebas!" },
+                { name: "DURI", color: "text-green-500", icon: "fa-leaf", desc: "Baik Hati & Penyayang!" },
+                { name: "BLAZE", color: "text-orange-500", icon: "fa-fire", desc: "Semangat Membara!" }
+            ];
+
+            const handleScan = () => {
+                setIsScanning(true);
+                setElementResult(null);
+
+                // Shuffle effect
+                let interval = setInterval(() => {
+                    const random = Math.floor(Math.random() * elements.length);
+                    setElementResult(elements[random]);
+                }, 100);
+
+                setTimeout(() => {
+                    clearInterval(interval);
+                    const finalRes = elements[Math.floor(Math.random() * elements.length)];
+                    setElementResult(finalRes);
+                    setIsScanning(false);
+                }, 2000);
+            };
+
             return (
-                <section className="py-16 px-4 relative">
-                    <div className="max-w-md mx-auto relative z-10 p-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-lg shadow-[0_0_20px_#ff0000]">
-                        <div className="bg-black p-4 rounded-md">
-                            <h2 className="text-3xl font-comic text-center text-white mb-6" style={{ textShadow: '2px 2px 0 #000' }}>
-                                {config.videoTitle}
-                            </h2>
-                            <div className="aspect-video bg-gray-800 flex items-center justify-center relative overflow-hidden group rounded-lg border-2 border-gray-700">
-                                <img
-                                    src={config.videoImage}
-                                    onError={(e) => {
-                                        e.target.onerror = null;
-                                        e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Blizzard&backgroundColor=b6e3f4";
-                                    }}
-                                    alt="Video Thumbnail"
-                                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
-                                />
-                                <div className="z-10 bg-red-600/90 p-4 rounded-full group-hover:scale-110 transition-transform cursor-pointer shadow-xl">
-                                    <i className="fas fa-play text-3xl text-white pl-1"></i>
+                <section className="py-16 px-4 relative bg-gray-900 border-t-2 border-b-2 border-boboiboy-orange">
+                    <h2 className="text-3xl font-comic text-center text-white mb-8 tech-title" style={{ textShadow: '2px 2px 0 #FF6B00' }}>
+                        DATA PERISIKAN
+                    </h2>
+
+                    <div className="flex justify-center mb-8 space-x-4">
+                        <button
+                            onClick={() => setActiveTab('quiz')}
+                            className={`px-6 py-2 rounded-full font-bold transition-all ${activeTab === 'quiz' ? 'bg-boboiboy-orange text-black shadow-[0_0_15px_#FF6B00]' : 'bg-gray-800 text-gray-500'}`}
+                        >
+                            UJIAN EJEN
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('scanner')}
+                            className={`px-6 py-2 rounded-full font-bold transition-all ${activeTab === 'scanner' ? 'bg-boboiboy-blue text-white shadow-[0_0_15px_#2563eb]' : 'bg-gray-800 text-gray-500'} ${!quizCompleted ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={!quizCompleted}
+                        >
+                            PENGESAN KUASA
+                        </button>
+                    </div>
+
+                    <div
+                        className="max-w-md mx-auto bg-black p-6 rounded-xl border-2 border-gray-700 shadow-2xl relative overflow-hidden min-h-[300px]"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* DECORATION */}
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-blue-500 to-transparent animate-pulse"></div>
+
+                        {activeTab === 'quiz' && (
+                            !quizCompleted ? (
+                                <div className="space-y-6 text-center animate-fade-in">
+                                    <h3 className="text-xl text-boboiboy-yellow font-comic mb-4">SOALAN {currentQ + 1} / {questions.length}</h3>
+                                    <p className="text-white text-lg font-bold mb-6">{questions[currentQ].q}</p>
+                                    <div className="space-y-3">
+                                        {questions[currentQ].options.map((opt, idx) => (
+                                            <button
+                                                key={idx}
+                                                onClick={() => handleAnswer(idx)}
+                                                className="w-full bg-gray-800 hover:bg-gray-700 text-white p-3 rounded border border-gray-600 active:bg-boboiboy-orange active:text-black transition-colors"
+                                            >
+                                                {opt}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
+                            ) : (
+                                <div className="text-center animate-bounce-in py-10">
+                                    <i className="fas fa-check-circle text-6xl text-green-500 mb-4"></i>
+                                    <h3 className="text-2xl font-comic text-white mb-2">TAHNIAH!</h3>
+                                    <p className="text-gray-400">Anda layak menjadi Ejen!</p>
+                                    <p className="text-xs text-yellow-500 mt-4 animate-pulse">MEMBUKA AKSES PENGESAN KUASA...</p>
+                                </div>
+                            )
+                        )}
+
+                        {activeTab === 'scanner' && (
+                            <div className="text-center animate-fade-in py-4">
+                                <h3 className="text-xl text-boboiboy-blue font-comic mb-6">ANALISA KUASA ELEMENTAL</h3>
+
+                                {elementResult ? (
+                                    <div className="mb-8">
+                                        <div className={`w-32 h-32 mx-auto rounded-full border-4 border-white flex items-center justify-center mb-4 bg-gray-800 ${isScanning ? 'animate-spin' : 'animate-pulse'}`}>
+                                            <i className={`fas ${elementResult.icon} text-5xl ${elementResult.color}`}></i>
+                                        </div>
+                                        <h4 className={`text-3xl font-comic ${elementResult.color} mb-2`}>{elementResult.name}</h4>
+                                        <p className="text-white font-mono text-sm">{elementResult.desc}</p>
+                                    </div>
+                                ) : (
+                                    <div className="mb-8 py-10">
+                                        <i className="fas fa-fingerprint text-6xl text-gray-600 animate-pulse"></i>
+                                    </div>
+                                )}
+
+                                <button
+                                    onClick={handleScan}
+                                    disabled={isScanning}
+                                    className={`w-full py-4 rounded font-bold text-xl uppercase tracking-widest transition-all ${isScanning ? 'bg-gray-600' : 'bg-red-600 hover:bg-red-500 text-white shadow-[0_0_20px_#dc2626]'}`}
+                                >
+                                    {isScanning ? "MENGANALISA..." : "IMBAS SEKARANG"}
+                                </button>
                             </div>
-                            <p className="text-center text-gray-400 text-xs mt-4 font-mono">
-                                KLIK PLAY UNTUK ANALISIS VIDEO
-                            </p>
-                        </div>
+                        )}
                     </div>
                 </section>
             );
@@ -1059,7 +1188,7 @@
 
                             <div ref={videoRef}>
                                 <SectionWrapper onNext={() => scrollToSection(guestbookRef)}>
-                                    <VideoSection config={config} />
+                                    <InteractiveMission config={config} />
                                 </SectionWrapper>
                             </div>
 
