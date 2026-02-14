@@ -460,7 +460,7 @@
             );
         };
 
-        const HeroSection = ({ onScrollToDetails }) => {
+        const HeroSection = () => {
             const titleRef = useRef(null);
 
             useEffect(() => {
@@ -472,8 +472,7 @@
 
             return (
                 <section
-                    onClick={onScrollToDetails}
-                    className="relative min-h-screen flex flex-col items-center justify-center text-center p-4 overflow-hidden cursor-pointer group pt-0"
+                    className="relative min-h-screen flex flex-col items-center justify-center text-center p-4 overflow-hidden pt-0"
                 >
                     <div className="relative z-20 w-full max-w-md -mt-12">
                         {/* Text: Transparent bg, Clean Shadow */}
@@ -613,11 +612,28 @@
             );
         };
 
+        // --- WRAPPER FOR SECTIONS TO HANDLE TAP-TO-NEXT ---
+        const SectionWrapper = ({ children, onNext, isLast }) => {
+            return (
+                <div
+                    onClick={onNext}
+                    className={`cursor-pointer group relative ${!isLast ? 'hover:after:content-["▼"] hover:after:absolute hover:after:bottom-2 hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:text-white hover:after:animate-bounce hover:after:opacity-50' : ''}`}
+                >
+                    {children}
+                </div>
+            );
+        };
+
         const App = () => {
             const [hasStarted, setHasStarted] = useState(false);
             const [isPlaying, setIsPlaying] = useState(false);
             const audioRef = useRef(null);
+
+            // Refs for each section
+            const heroRef = useRef(null);
             const detailsRef = useRef(null);
+            const videoRef = useRef(null);
+            const guestbookRef = useRef(null);
 
             const handleStart = () => {
                 setHasStarted(true);
@@ -637,9 +653,9 @@
                 setIsPlaying(!isPlaying);
             };
 
-            const handleScrollToDetails = () => {
-                if (detailsRef.current) {
-                    detailsRef.current.scrollIntoView({ behavior: 'smooth' });
+            const scrollToSection = (ref) => {
+                if (ref && ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
                 }
             };
 
@@ -654,15 +670,30 @@
                             <LightningEffect />
                             <ParticleSystem />
 
-                            {/* Main Content */}
-                            <HeroSection onScrollToDetails={handleScrollToDetails} />
+                            {/* Main Content with Sequential Scrolling */}
 
-                            <div ref={detailsRef}>
-                                <DetailsSection />
+                            <div ref={heroRef}>
+                                <SectionWrapper onNext={() => scrollToSection(detailsRef)}>
+                                    <HeroSection />
+                                </SectionWrapper>
                             </div>
 
-                            <VideoSection />
-                            <GuestbookSection />
+                            <div ref={detailsRef}>
+                                <SectionWrapper onNext={() => scrollToSection(videoRef)}>
+                                    <DetailsSection />
+                                </SectionWrapper>
+                            </div>
+
+                            <div ref={videoRef}>
+                                <SectionWrapper onNext={() => scrollToSection(guestbookRef)}>
+                                    <VideoSection />
+                                </SectionWrapper>
+                            </div>
+
+                            <div ref={guestbookRef}>
+                                <GuestbookSection />
+                            </div>
+
                             <Footer />
 
                             <MusicPlayer isPlaying={isPlaying} toggleMusic={handleMusicToggle} />
