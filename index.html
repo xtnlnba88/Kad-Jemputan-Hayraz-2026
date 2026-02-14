@@ -38,6 +38,17 @@
     <!-- GSAP -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
+    <meta property="og:title" content="Misi Rahsia: Birthday Hayraz Mikyle ke-6!">
+    <meta property="og:description"
+        content="Ejen dipanggil untuk lapor diri! Tarikh: 15 Feb 2026. Lokasi: Teratak Melana. Jangan lambat!">
+    <meta property="og:image"
+        content="https://arleta.site/interactivelink/2061/Gemini_Generated_Image_ejfeo8ejfeo8ejfe.png">
+    <meta property="og:url" content="https://kad-jemputan-hayraz.pages.dev">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image"
+        content="https://arleta.site/interactivelink/2061/Gemini_Generated_Image_ejfeo8ejfeo8ejfe.png">
+
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap"
         rel="stylesheet">
@@ -588,6 +599,25 @@
         const WishesSection = () => {
             const wishesLink = "https://wa.me/?text=Selamat%20Hari%20Jadi%20Hayraz!%20Semoga%20terus%20Power!%20%F0%9F%8E%89";
 
+            const handleShare = async () => {
+                const shareData = {
+                    title: 'Misi Rahsia: Birthday Hayraz Mikyle!',
+                    text: 'Ejen, anda jemput hadir ke Misi Sambutan Hari Jadi Hayraz Mikyle yang ke-6! Klik link untuk info misi.',
+                    url: window.location.href
+                };
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (err) {
+                        console.log('Error sharing:', err);
+                    }
+                } else {
+                    alert('Link disalin ke clipboard!');
+                    navigator.clipboard.writeText(window.location.href);
+                }
+            };
+
             return (
                 <section className="py-20 px-4 text-center relative overflow-hidden">
                     <h2 className="text-3xl font-comic text-yellow-400 mb-4">UCAPAN POWER</h2>
@@ -595,10 +625,17 @@
                         "Antara kawan baik adalah kawan yang mendoakan kejayaan sahabatnya."
                     </p>
 
-                    <a href={wishesLink} target="_blank" className="inline-flex items-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-8 rounded-full shadow-[0_0_15px_#22c55e] transition-all transform hover:-translate-y-1">
-                        <i className="fab fa-whatsapp text-3xl"></i>
-                        <span className="font-comic text-xl">HANTAR UCAPAN</span>
-                    </a>
+                    <div className="flex flex-col space-y-4 items-center">
+                        <a href={wishesLink} target="_blank" className="w-64 inline-flex items-center justify-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-full shadow-[0_0_15px_#22c55e] transition-all transform hover:-translate-y-1">
+                            <i className="fab fa-whatsapp text-2xl"></i>
+                            <span className="font-comic text-lg">HANTAR UCAPAN</span>
+                        </a>
+
+                        <button onClick={handleShare} className="w-64 inline-flex items-center justify-center space-x-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-full shadow-[0_0_15px_#2563eb] transition-all transform hover:-translate-y-1">
+                            <i className="fas fa-share-alt text-2xl"></i>
+                            <span className="font-comic text-lg">SEBARKAN MISI</span>
+                        </button>
+                    </div>
                 </section>
             );
         };
