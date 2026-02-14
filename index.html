@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jemputan Hari Jadi - Misi Boboiboy</title>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'boboiboy-orange': '#FF6B00',
+                        'boboiboy-red': '#E63946',
+                        'boboiboy-yellow': '#FEC601',
+                        'boboiboy-black': '#1A1A1A',
+                        'boboiboy-blue': '#457B9D',
+                    },
+                    fontFamily: {
+                        'comic': ['"Bangers"', 'cursive'],
+                        'body': ['"Roboto"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #1A1A1A;
+            overflow-x: hidden;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        /* Comic Halftone Pattern */
+        .halftone-bg {
+            background-image: radial-gradient(#FEC601 20%, transparent 20%),
+                radial-gradient(#FEC601 20%, transparent 20%);
+            background-color: #FF6B00;
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+        }
+
+        .comic-border {
+            border: 4px solid #1A1A1A;
+            box-shadow: 8px 8px 0px #1A1A1A;
+        }
+
+        .comic-text-shadow {
+            text-shadow: 4px 4px 0px #1A1A1A;
+        }
+
+        /* Lightning Animation */
+        @keyframes flash {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 0.8;
+            }
+
+            10% {
+                opacity: 0;
+            }
+
+            15% {
+                opacity: 1;
+            }
+
+            20% {
+                opacity: 0;
+            }
+
+            25% {
+                opacity: 0.5;
+            }
+
+            30% {
+                opacity: 0;
+            }
+        }
+
+        @keyframes strike {
+            0% {
+                opacity: 0;
+                transform: scaleY(0.5) translateX(0);
+            }
+
+            5% {
+                opacity: 1;
+                transform: scaleY(1) translateX(0);
+            }
+
+            10% {
+                opacity: 1;
+                transform: scaleY(1) translateX(0);
+            }
+
+            15% {
+                opacity: 0;
+                transform: scaleY(1) translateX(0);
+            }
+
+            100% {
+                opacity: 0;
+            }
+        }
+
+        .lightning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 50;
+            /* Flash is on top */
+            mix-blend-mode: overlay;
+        }
+
+        .trigger-flash {
+            animation: flash 0.3s ease-out;
+        }
+
+        /* Lightning Bolts Container */
+        .bolts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            /* Behind content but above bg */
+            overflow: hidden;
+        }
+
+        .bolt {
+            position: absolute;
+            top: -50px;
+            width: 150px;
+            /* Adjust size as needed */
+            height: auto;
+            filter: drop-shadow(0 0 15px #FEC601);
+            opacity: 0;
+        }
+
+        .strike-animation {
+            animation: strike 0.5s linear;
+        }
+
+        .loading-bar {
+            transition: width 0.5s ease-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1A1A1A;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FF6B00;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body class="text-white">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- COMPONENTS ---
+
+        const MusicPlayer = ({ isPlaying, toggleMusic }) => {
+            return (
+                <button
+                    onClick={toggleMusic}
+                    className="fixed bottom-6 right-6 z-50 bg-boboiboy-yellow text-boboiboy-black p-4 rounded-full comic-border hover:scale-110 transition-transform animate-bounce"
+                >
+                    {isPlaying ? <i className="fas fa-volume-up text-2xl"></i> : <i className="fas fa-volume-mute text-2xl"></i>}
+                </button>
+            );
+        };
+
+        const LightningEffect = () => {
+            const [flash, setFlash] = useState(false);
+            const [bolts, setBolts] = useState([]);
+
+            useEffect(() => {
+                const triggerLightning = () => {
+                    // Trigger white flash occasionally
+                    if (Math.random() > 0.7) {
+                        setFlash(true);
+                        setTimeout(() => setFlash(false), 150);
+                    }
+
+                    // Always trigger visual bolts
+                    const id = Date.now() + Math.random();
+                    const newBolt = {
+                        id: id,
+                        left: Math.random() * 90 + 5, // 5% to 95% width
+                        top: Math.random() * 20 - 10, // Slight vertical variation at top
+                        scale: Math.random() * 0.8 + 0.6, // Random scale
+                        rotation: Math.random() * 40 - 20 // Tilt -20 to 20 deg
+                    };
+
+                    setBolts(prev => [...prev, newBolt]);
+
+                    // Cleanup bolt after animation
+                    setTimeout(() => {
+                        setBolts(prev => prev.filter(b => b.id !== id));
+                    }, 500);
+                };
+
+                // Loop frequently (random interval between 500ms and 1500ms)
+                let timeoutId;
+                const loop = () => {
+                    triggerLightning();
+                    const nextTime = Math.random() * 1000 + 500; // 0.5s to 1.5s
+                    timeoutId = setTimeout(loop, nextTime);
+                };
+
+                loop(); // Start loop
+
+                return () => clearTimeout(timeoutId);
+            }, []);
+
+            return (
+                <>
+                    <div className={`lightning-overlay ${flash ? 'trigger-flash' : ''}`}></div>
+                    <div className="bolts-container">
+                        {bolts.map(bolt => (
+                            <svg
+                                key={bolt.id}
+                                className="bolt strike-animation"
+                                style={{
+                                    left: `${bolt.left}%`,
+                                    top: `${bolt.top}%`,
+                                    transform: `scale(${bolt.scale}) rotate(${bolt.rotation}deg)`
+                                }}
+                                viewBox="0 0 100 200"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                            >
+                                <path
+                                    d="M40 0L0 80H30L10 200L100 70H60L90 0H40Z"
+                                    fill="#FEC601"
+                                    stroke="white"
+                                    strokeWidth="2"
+                                />
+                            </svg>
+                        ))}
+                    </div>
+                </>
+            );
+        };
+
+        const LoadingScreen = ({ onComplete }) => {
+            const [progress, setProgress] = useState(0);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    setProgress(prev => {
+                        if (prev >= 100) {
+                            clearInterval(interval);
+                            setTimeout(onComplete, 500);
+                            return 100;
+                        }
+                        return prev + 5;
+                    });
+                }, 100);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="fixed inset-0 bg-boboiboy-black z-50 flex flex-col items-center justify-center p-4">
+                    <h1 className="text-4xl font-comic text-boboiboy-yellow mb-4 animate-pulse">
+                        MENGUMPUL KUASA...
+                    </h1>
+                    <div className="w-full max-w-xs h-8 border-4 border-white bg-gray-800 rounded-full overflow-hidden relative">
+                        <div
+                            className="h-full bg-gradient-to-r from-boboiboy-orange to-boboiboy-red loading-bar"
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                    <p className="mt-4 font-bold text-boboiboy-orange">{progress}%</p>
+                </div>
+            );
+        };
+
+        const HeroSection = () => {
+            const titleRef = useRef(null);
+
+            useEffect(() => {
+                gsap.fromTo(titleRef.current,
+                    { scale: 0, rotation: -10, opacity: 0 },
+                    { scale: 1, rotation: 0, opacity: 1, duration: 1, ease: "elastic.out(1, 0.5)" }
+                );
+            }, []);
+
+            return (
+                <section className="relative min-h-screen flex flex-col items-center justify-center text-center p-4 overflow-hidden">
+                    {/* Background Burst */}
+                    <div className="absolute inset-0 halftone-bg z-0 opacity-80"></div>
+                    <div className="absolute inset-0 bg-gradient-to-b from-transparent to-boboiboy-black z-10 w-full h-full"></div>
+
+                    {/* Hero Content */}
+                    <div className="relative z-20 w-full max-w-md mt-10">
+                        <div className="mb-4 inline-block bg-boboiboy-red text-white font-bold py-1 px-4 transform -rotate-3 comic-border animate-pulse">
+                            MISI: MAKAN-MAKAN!
+                        </div>
+
+                        <h1 ref={titleRef} className="text-6xl md:text-8xl font-comic text-boboiboy-yellow comic-text-shadow leading-tight mb-2 uppercase">
+                            HAYRAZ<br />MIKYLE
+                        </h1>
+
+                        <div className="my-6 relative group">
+                            <div className="absolute inset-0 bg-boboiboy-blue transform rotate-3 rounded-xl border-4 border-black"></div>
+                            {/* Boboiboy FrostFire Image */}
+                            <img
+                                src="https://static.wikia.nocookie.net/boboiboy/images/1/13/BoBoiBoy_Movie_2_on_Astro_First.jpg/revision/latest"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Hayraz&backgroundColor=ffdfbf&clothing=superhero";
+                                }}
+                                alt="Hayraz Mikyle"
+                                className="relative w-64 h-64 md:w-80 md:h-80 object-cover mx-auto rounded-xl border-4 border-black shadow-2xl transform transition-transform group-hover:scale-105 bg-white backdrop-blur-sm"
+                            />
+                            <div className="absolute -bottom-4 -right-4 bg-boboiboy-red text-white font-comic text-2xl py-2 px-6 border-4 border-black transform rotate-12 animate-bounce">
+                                6 TAHUN!
+                            </div>
+                        </div>
+
+                        <h2 className="text-3xl font-comic text-white mt-8 mb-2">
+                            POWER GILERR!
+                        </h2>
+                        <div className="bg-white text-boboiboy-black font-bold text-xl py-2 px-6 inline-block transform -skew-x-12 border-4 border-black">
+                            JOM PARTY SAMA-SAMA!
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const DetailsSection = () => {
+            const details = [
+                { icon: "fa-calendar-alt", label: "TARIKH MISI", value: "15 FEBRUARI 2026", color: "bg-boboiboy-blue" },
+                { icon: "fa-clock", label: "WAKTU BERKUMPUL", value: "8.00 MALAM", color: "bg-boboiboy-orange" },
+                { icon: "fa-map-marker-alt", label: "MARKAS RAHSIA", value: "TERATAK MELANA, JERANG", color: "bg-boboiboy-red" },
+            ];
+
+            return (
+                <section className="py-12 px-4 bg-boboiboy-black relative">
+                    <div className="absolute top-0 left-0 w-full h-16 bg-gradient-to-b from-boboiboy-black to-transparent z-10"></div>
+
+                    <h2 className="text-4xl font-comic text-center text-boboiboy-yellow mb-10 comic-text-shadow">
+                        INFO PENTING
+                    </h2>
+
+                    <div className="max-w-md mx-auto space-y-6">
+                        {details.map((item, idx) => (
+                            <div key={idx} className="relative group cursor-pointer">
+                                <div className={`absolute inset-0 ${item.color} transform translate-x-2 translate-y-2 border-4 border-white`}></div>
+                                <div className="relative bg-white p-4 border-4 border-black flex items-center space-x-4 transform transition-transform group-hover:-translate-y-1">
+                                    <div className={`w-12 h-12 ${item.color} rounded-full flex items-center justify-center border-2 border-black flex-shrink-0`}>
+                                        <i className={`fas ${item.icon} text-white text-xl`}></i>
+                                    </div>
+                                    <div>
+                                        <p className="font-comic text-xl text-gray-500">{item.label}</p>
+                                        <p className="font-bold text-boboiboy-black text-lg md:text-xl uppercase">{item.value}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            );
+        };
+
+        const VideoSection = () => {
+            return (
+                <section className="py-12 px-4 bg-boboiboy-orange halftone-bg relative border-t-4 border-black">
+                    <div className="max-w-md mx-auto relative z-10">
+                        <h2 className="text-4xl font-comic text-center text-white mb-8 comic-text-shadow transform -rotate-2">
+                            ZON BLIZZARD
+                        </h2>
+
+                        <div className="bg-black p-2 border-4 border-white shadow-2xl rounded-lg">
+                            <div className="aspect-video bg-gray-800 flex items-center justify-center relative overflow-hidden group">
+                                {/* Boboiboy Blizzard Placeholder */}
+                                <img
+                                    src="https://static.wikia.nocookie.net/boboiboy/images/7/76/BoBoiBoy_Blizzard_1.png/revision/latest"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Blizzard&backgroundColor=b6e3f4";
+                                    }}
+                                    alt="Boboiboy Blizzard"
+                                    className="absolute inset-0 w-full h-full object-cover opacity-80"
+                                />
+                                <div className="relative z-10 text-center p-6 bg-black/50 rounded-xl backdrop-blur-sm border-2 border-white/30">
+                                    <i className="fab fa-youtube text-6xl text-red-600 mb-4 group-hover:scale-110 transition-transform shadow-lg rounded-full bg-white"></i>
+                                    <p className="font-comic text-white text-xl text-shadow">LAYAN VIDEO!</p>
+                                </div>
+                                <div className="absolute inset-0 border-4 border-transparent group-hover:border-boboiboy-yellow pointer-events-none transition-colors"></div>
+                            </div>
+                        </div>
+
+                        <p className="text-center font-bold text-black mt-4 bg-white inline-block px-4 py-1 border-2 border-black transform rotate-1 mx-auto block w-max">
+                            VIDEO KHAS HAYRAZ
+                        </p>
+                    </div>
+                </section>
+            );
+        };
+
+        const WishesSection = () => {
+            // Creating a WhatsApp link for wishes
+            const wishesLink = "https://wa.me/?text=Selamat%20Hari%20Jadi%20Hayraz!%20Semoga%20ceriap%20selalu%20macam%20Boboiboy!%20%F0%9F%8E%89";
+
+            return (
+                <section className="py-16 px-4 bg-boboiboy-black text-center pb-32 relative overflow-hidden">
+                    {/* Decorative Elements */}
+                    <div className="absolute top-10 left-10 text-boboiboy-yellow text-6xl opacity-20 transform -rotate-12"><i className="fas fa-bolt"></i></div>
+                    <div className="absolute bottom-10 right-10 text-boboiboy-red text-6xl opacity-20 transform rotate-12"><i className="fas fa-fire"></i></div>
+
+                    <h2 className="text-4xl font-comic text-boboiboy-yellow mb-4 comic-text-shadow">
+                        UCAPAN POWER
+                    </h2>
+                    <p className="text-gray-300 mb-8 max-w-xs mx-auto text-lg font-comic">
+                        Tak perlu RSVP, datang je! Tapi kalau nak bagi ucapan sempoi, tekan butang bawah ni!
+                    </p>
+
+                    <div className="flex flex-col space-y-4 max-w-xs mx-auto relative z-10">
+                        <a href={wishesLink} target="_blank" className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 px-6 rounded-lg border-4 border-white shadow-[4px_4px_0px_#fff] transform transition active:translate-y-1 active:shadow-none flex items-center justify-center space-x-2 animate-pulse">
+                            <i className="fab fa-whatsapp text-2xl"></i>
+                            <span className="font-comic text-xl">HANTAR UCAPAN</span>
+                        </a>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = () => {
+            return (
+                <footer className="bg-white py-6 text-center border-t-4 border-black">
+                    <p className="font-comic text-boboiboy-black text-lg">
+                        TERBAIKKK!
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">
+                        &copy; 2026 Hayraz Mikyle Birthday Force
+                    </p>
+                </footer>
+            );
+        };
+
+        const App = () => {
+            const [isLoading, setIsLoading] = useState(true);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const audioRef = useRef(null);
+
+            const handleMusicToggle = () => {
+                if (isPlaying) {
+                    audioRef.current.pause();
+                } else {
+                    audioRef.current.play().catch(e => console.log("Audio play failed (interaction needed):", e));
+                }
+                setIsPlaying(!isPlaying);
+            };
+
+            const handleLoadingComplete = () => {
+                setIsLoading(false);
+                // Auto-play music attempt after interaction styled loading screen
+                // Note: Browsers block auto-play until interaction, 
+                // so we usually need user to click "Enter" but we'll try or wait for toggle.
+            };
+
+            return (
+                <div className="min-h-screen relative font-body selection:bg-boboiboy-orange selection:text-black">
+                    <LightningEffect />
+                    {isLoading ? (
+                        <LoadingScreen onComplete={handleLoadingComplete} />
+                    ) : (
+                        <div className="animate-fade-in">
+                            <HeroSection />
+                            <DetailsSection />
+                            <VideoSection />
+                            <WishesSection />
+                            <Footer />
+                            <MusicPlayer isPlaying={isPlaying} toggleMusic={handleMusicToggle} />
+
+                            {/* Hidden Audio Element - Replace src with actual Boboiboy theme mp3 */}
+                            <audio ref={audioRef} loop>
+                                <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+                            </audio>
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
