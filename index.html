@@ -722,6 +722,188 @@
             );
         };
 
+        // --- ADMIN DASHBOARD COMPONENT ---
+        const AdminDashboard = ({ isOpen, onClose, config, onUpdateConfig }) => {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [username, setUsername] = useState("");
+            const [password, setPassword] = useState("");
+            const [activeTab, setActiveTab] = useState("content"); // content, media, wishes, security
+            const [editConfig, setEditConfig] = useState(config);
+            const [wishes, setWishes] = useState([]);
+
+            // Login Logic
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                try {
+                    const doc = await db.collection("settings").doc("security").get();
+                    if (doc.exists) {
+                        const data = doc.data();
+                        if (username === data.username && password === data.password) {
+                            setIsLoggedIn(true);
+                        } else {
+                            alert("Username atau Password salah!");
+                        }
+                    } else {
+                        // Fallback init if missing
+                        if (username === "admin" && password === "admin1234") {
+                            await db.collection("settings").doc("security").set({ username: "admin", password: "admin1234" });
+                            setIsLoggedIn(true);
+                        } else {
+                            alert("Sila cuba default: admin / admin1234");
+                        }
+                    }
+                } catch (err) {
+                    console.error(err);
+                    alert("Database Error");
+                }
+            };
+
+            // Fetch Wishes for Management
+            useEffect(() => {
+                if (isLoggedIn && activeTab === "wishes") {
+                    const unsubscribe = db.collection("wishes").orderBy("timestamp", "desc").onSnapshot(snap => {
+                        setWishes(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+                    });
+                    return () => unsubscribe();
+                }
+            }, [isLoggedIn, activeTab]);
+
+            const handleSaveConfig = async () => {
+                try {
+                    await db.collection("site_config").doc("main").set(editConfig, { merge: true });
+                    onUpdateConfig(editConfig);
+                    alert("Berjaya Save!");
+                } catch (err) {
+                    alert("Gagal Save: " + err.message);
+                }
+            };
+
+            const handleDeleteWish = async (id) => {
+                if (confirm("Confirm padam ucapan ni?")) {
+                    await db.collection("wishes").doc(id).delete();
+                }
+            };
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-[200] bg-black/95 flex items-center justify-center p-4">
+                    <div className="bg-gray-900 border-2 border-boboiboy-orange w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-lg shadow-[0_0_50px_#FF6B00] relative">
+                        <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-white">
+                            <i className="fas fa-times text-2xl"></i>
+                        </button>
+
+                        {!isLoggedIn ? (
+                            <div className="p-10 text-center">
+                                <h2 className="text-3xl font-comic text-boboiboy-yellow mb-6">TOP SECRET ACCESS</h2>
+                                <form onSubmit={handleLogin} className="space-y-4 max-w-sm mx-auto">
+                                    <input type="text" placeholder="Username" className="w-full p-3 bg-black border border-gray-700 text-white rounded" value={username} onChange={e => setUsername(e.target.value)} />
+                                    <input type="password" placeholder="Password" className="w-full p-3 bg-black border border-gray-700 text-white rounded" value={password} onChange={e => setPassword(e.target.value)} />
+                                    <button type="submit" className="w-full bg-boboiboy-red py-3 font-bold text-white rounded hover:bg-red-700">LOGIN</button>
+                                </form>
+                            </div>
+                        ) : (
+                            <div className="p-6">
+                                <h2 className="text-2xl font-comic text-white mb-6 border-b border-gray-700 pb-2">
+                                    ADMIN DASHBOARD <span className="text-sm text-gray-500 ml-2 font-mono">v3.0</span>
+                                </h2>
+
+                                {/* Tabs */}
+                                <div className="flex space-x-2 mb-6 overflow-x-auto pb-2">
+                                    {['content', 'media', 'wishes', 'security'].map(tab => (
+                                        <button
+                                            key={tab}
+                                            onClick={() => setActiveTab(tab)}
+                                            className={`px-4 py-2 rounded font-bold uppercase text-sm ${activeTab === tab ? 'bg-boboiboy-orange text-black' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}
+                                        >
+                                            {tab}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Content Tab */}
+                                {activeTab === 'content' && (
+                                    <div className="space-y-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div className="md:col-span-2"><label className="text-xs text-gray-500">Page Title</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.pageTitle || ''} onChange={e => setEditConfig({ ...editConfig, pageTitle: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Hero Title (Line 1)</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.heroTitle1 || ''} onChange={e => setEditConfig({ ...editConfig, heroTitle1: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Hero Title (Line 2)</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.heroTitle2 || ''} onChange={e => setEditConfig({ ...editConfig, heroTitle2: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Top Banner Text</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.heroBanner || ''} onChange={e => setEditConfig({ ...editConfig, heroBanner: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Sticker Text</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.heroSticker || ''} onChange={e => setEditConfig({ ...editConfig, heroSticker: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Event Date</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.eventDate || ''} onChange={e => setEditConfig({ ...editConfig, eventDate: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Event Time</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.eventTime || ''} onChange={e => setEditConfig({ ...editConfig, eventTime: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Event Location</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.eventLocation || ''} onChange={e => setEditConfig({ ...editConfig, eventLocation: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Target Date (ISO format)</label><input type="datetime-local" className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.targetDateISO || ''} onChange={e => setEditConfig({ ...editConfig, targetDateISO: e.target.value })} /></div>
+                                    </div>
+                                )}
+
+                                {/* Media Tab */}
+                                {activeTab === 'media' && (
+                                    <div className="space-y-4">
+                                        <div><label className="text-xs text-gray-500">Hero Image URL</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.heroImage || ''} onChange={e => setEditConfig({ ...editConfig, heroImage: e.target.value })} /></div>
+                                        {editConfig.heroImage && <img src={editConfig.heroImage} className="h-32 object-contain border border-gray-700" alt="Preview" />}
+
+                                        <div><label className="text-xs text-gray-500">Video Section Title</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.videoTitle || ''} onChange={e => setEditConfig({ ...editConfig, videoTitle: e.target.value })} /></div>
+                                        <div><label className="text-xs text-gray-500">Video Image URL</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={editConfig.videoImage || ''} onChange={e => setEditConfig({ ...editConfig, videoImage: e.target.value })} /></div>
+                                        {editConfig.videoImage && <img src={editConfig.videoImage} className="h-32 object-contain border border-gray-700" alt="Preview" />}
+                                    </div>
+                                )}
+
+                                {/* Wishes Tab */}
+                                {activeTab === 'wishes' && (
+                                    <div className="space-y-2">
+                                        <p className="text-sm text-gray-400">Total Wishes: {wishes.length}</p>
+                                        <div className="max-h-[400px] overflow-y-auto border border-gray-700 rounded p-2">
+                                            {wishes.map(wish => (
+                                                <div key={wish.id} className="bg-gray-800 p-3 mb-2 rounded flex justify-between items-start">
+                                                    <div>
+                                                        <span className="font-bold text-boboiboy-orange text-sm">{wish.name}</span>
+                                                        <p className="text-gray-300 text-xs">{wish.message}</p>
+                                                    </div>
+                                                    <button onClick={() => handleDeleteWish(wish.id)} className="text-red-500 hover:text-red-400">
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Security Tab */}
+                                {activeTab === 'security' && (
+                                    <div className="space-y-4">
+                                        <p className="text-yellow-500 text-sm">Update username/password untuk admin login.</p>
+                                        <input className="w-full bg-black border border-gray-700 p-2 rounded text-white" placeholder="New Username" id="newUsername" />
+                                        <input className="w-full bg-black border border-gray-700 p-2 rounded text-white" placeholder="New Password" id="newPassword" type="password" />
+                                        <button
+                                            onClick={async () => {
+                                                const u = document.getElementById('newUsername').value;
+                                                const p = document.getElementById('newPassword').value;
+                                                if (u && p) {
+                                                    await db.collection("settings").doc("security").set({ username: u, password: p });
+                                                    alert("Security Updated!");
+                                                }
+                                            }}
+                                            className="bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                        >
+                                            Update Credentials
+                                        </button>
+                                    </div>
+                                )}
+
+                                {(activeTab === 'content' || activeTab === 'media') && (
+                                    <div className="mt-8 border-t border-gray-700 pt-4 flex justify-end">
+                                        <button onClick={handleSaveConfig} className="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded font-bold shadow-lg">
+                                            SAVE CHANGES
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
         const App = () => {
             const [hasStarted, setHasStarted] = useState(false);
             const [isPlaying, setIsPlaying] = useState(false);
