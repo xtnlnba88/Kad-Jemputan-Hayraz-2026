@@ -293,13 +293,24 @@
         };
 
         const GuestbookSection = () => {
-            const [wishes, setWishes] = useState([
-                { name: "Yaya", message: "Selamat Hari Jadi Hayraz! Semoga kekal hebat macam Boboiboy!" },
-                { name: "Gopal", message: "Jangan lupa simpan makanan untuk aku dey! Hahaha!" },
-                { name: "Fang", message: "Latihan tempur diteruskan! Happy Birthday!" }
-            ]);
+            const [wishes, setWishes] = useState(() => {
+                const saved = localStorage.getItem('hayraz_wishes');
+                if (saved) {
+                    return JSON.parse(saved);
+                } else {
+                    return [
+                        { name: "Yaya", message: "Selamat Hari Jadi Hayraz! Semoga kekal hebat macam Boboiboy!" },
+                        { name: "Gopal", message: "Jangan lupa simpan makanan untuk aku dey! Hahaha!" },
+                        { name: "Fang", message: "Latihan tempur diteruskan! Happy Birthday!" }
+                    ];
+                }
+            });
             const [name, setName] = useState("");
             const [message, setMessage] = useState("");
+
+            useEffect(() => {
+                localStorage.setItem('hayraz_wishes', JSON.stringify(wishes));
+            }, [wishes]);
 
             const handleSubmit = (e) => {
                 e.preventDefault();
