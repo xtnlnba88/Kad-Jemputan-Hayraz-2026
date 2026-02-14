@@ -1108,7 +1108,15 @@
                 const fetchConfig = async () => {
                     const doc = await db.collection("site_config").doc("main").get();
                     if (doc.exists) {
-                        setConfig(prev => ({ ...prev, ...doc.data() }));
+                        const data = doc.data();
+                        // HARD FIX: If database still has old image, clear it
+                        if (data.heroImage && data.heroImage.includes("wikia.nocookie.net/boboiboy/images/1/13")) {
+                            data.heroImage = "";
+                        }
+                        if (data.videoImage && data.videoImage.includes("wikia.nocookie.net/boboiboy/images/7/76")) {
+                            data.videoImage = "";
+                        }
+                        setConfig(prev => ({ ...prev, ...data }));
                     } else {
                         // init default
                         await db.collection("site_config").doc("main").set(config);
