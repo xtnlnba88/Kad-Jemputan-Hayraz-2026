@@ -246,8 +246,26 @@
 <body class="text-white">
     <div id="root"></div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
+
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvix4lA_FgeVY_kgkO-pji11w9CCLeIh0",
+            authDomain: "hayrazmy.firebaseapp.com",
+            projectId: "hayrazmy",
+            storageBucket: "hayrazmy.firebasestorage.app",
+            messagingSenderId: "168798630030",
+            appId: "1:168798630030:web:27557546d86abd4dc499df"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         // --- COMPONENTS ---
 
@@ -293,32 +311,48 @@
         };
 
         const GuestbookSection = () => {
-            const [wishes, setWishes] = useState(() => {
-                const saved = localStorage.getItem('hayraz_wishes');
-                if (saved) {
-                    return JSON.parse(saved);
-                } else {
-                    return [
-                        { name: "Yaya", message: "Selamat Hari Jadi Hayraz! Semoga kekal hebat macam Boboiboy!" },
-                        { name: "Gopal", message: "Jangan lupa simpan makanan untuk aku dey! Hahaha!" },
-                        { name: "Fang", message: "Latihan tempur diteruskan! Happy Birthday!" }
-                    ];
-                }
-            });
+            const [wishes, setWishes] = useState([]);
             const [name, setName] = useState("");
             const [message, setMessage] = useState("");
+            const [isSubmitting, setIsSubmitting] = useState(false);
 
             useEffect(() => {
-                localStorage.setItem('hayraz_wishes', JSON.stringify(wishes));
-            }, [wishes]);
+                // Real-time listener for wishes
+                const unsubscribe = db.collection("wishes")
+                    .orderBy("timestamp", "desc")
+                    .onSnapshot((snapshot) => {
+                        const wishesData = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        setWishes(wishesData);
+                    }, (error) => {
+                        console.error("Error fetching wishes:", error);
+                    });
 
-            const handleSubmit = (e) => {
+                return () => unsubscribe();
+            }, []);
+
+            const handleSubmit = async (e) => {
                 e.preventDefault();
                 if (!name || !message) return;
-                const newWish = { name, message };
-                setWishes([newWish, ...wishes]);
-                setName("");
-                setMessage("");
+
+                setIsSubmitting(true);
+                try {
+                    await db.collection("wishes").add({
+                        name: name,
+                        message: message,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    setName("");
+                    setMessage("");
+                    alert("Ucapan misi berjaya dihantar! Terima kasih Ejen.");
+                } catch (error) {
+                    console.error("Error adding wish: ", error);
+                    alert("Ralat sistem! Sila cuba lagi.");
+                } finally {
+                    setIsSubmitting(false);
+                }
             };
 
             return (
@@ -337,6 +371,7 @@
                                 onChange={(e) => setName(e.target.value)}
                                 className="w-full bg-black text-white border-2 border-gray-600 p-2 rounded focus:border-boboiboy-yellow focus:outline-none"
                                 placeholder="Cth: Ejen Ali"
+                                maxLength="30"
                             />
                         </div>
                         <div>
@@ -346,26 +381,35 @@
                                 onChange={(e) => setMessage(e.target.value)}
                                 className="w-full bg-black text-white border-2 border-gray-600 p-2 rounded h-24 focus:border-boboiboy-yellow focus:outline-none"
                                 placeholder="Tulis ucapan power korang kat sini..."
+                                maxLength="200"
                             ></textarea>
                         </div>
-                        <button type="submit" className="w-full bg-boboiboy-red hover:bg-red-700 text-white font-bold py-3 px-6 rounded border-2 border-white shadow-[4px_4px_0px_#fff] transform active:translate-y-1 active:shadow-none transition">
-                            HANTAR DATA
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full text-white font-bold py-3 px-6 rounded border-2 border-white shadow-[4px_4px_0px_#fff] transform transition ${isSubmitting ? 'bg-gray-600 cursor-not-allowed' : 'bg-boboiboy-red hover:bg-red-700 active:translate-y-1 active:shadow-none'}`}
+                        >
+                            {isSubmitting ? "MENGHANTAR DATA..." : "HANTAR DATA"}
                         </button>
                     </form>
 
                     {/* List */}
-                    <div className="max-w-md mx-auto space-y-4">
-                        {wishes.map((wish, idx) => (
-                            <div key={idx} className="bg-white text-black p-4 rounded-lg shadow-lg border-l-8 border-boboiboy-blue transform transition hover:scale-105">
-                                <div className="flex items-center space-x-2 mb-2">
-                                    <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                                        <i className="fas fa-user-astronaut text-gray-600"></i>
+                    <div className="max-w-md mx-auto space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                        {wishes.length === 0 ? (
+                            <p className="text-center text-gray-500 font-mono italic">Belum ada data... Jadilah yang pertama!</p>
+                        ) : (
+                            wishes.map((wish) => (
+                                <div key={wish.id} className="bg-white text-black p-4 rounded-lg shadow-lg border-l-8 border-boboiboy-blue transform transition hover:scale-102">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                            <i className="fas fa-user-astronaut text-gray-600"></i>
+                                        </div>
+                                        <span className="font-comic text-lg uppercase font-bold text-boboiboy-blue">{wish.name}</span>
                                     </div>
-                                    <span className="font-comic text-lg uppercase font-bold text-boboiboy-blue">{wish.name}</span>
+                                    <p className="font-mono text-sm text-gray-800 break-words">"{wish.message}"</p>
                                 </div>
-                                <p className="font-mono text-sm text-gray-800">"{wish.message}"</p>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
                 </section>
             );
