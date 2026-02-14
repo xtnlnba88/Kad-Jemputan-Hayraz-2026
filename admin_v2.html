@@ -1,0 +1,1178 @@
+﻿<!DOCTYPE html>
+<html lang="ms">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jemputan Hari Jadi - Misi Boboiboy</title>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'boboiboy-orange': '#FF6B00',
+                        'boboiboy-red': '#E63946',
+                        'boboiboy-yellow': '#FEC601',
+                        'boboiboy-black': '#1A1A1A',
+                        'boboiboy-blue': '#457B9D',
+                    },
+                    fontFamily: {
+                        'comic': ['"Bangers"', 'cursive'],
+                        'body': ['"Roboto"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+    <meta property="og:title" content="Misi Rahsia: Birthday Hayraz Mikyle ke-6!">
+    <meta property="og:description"
+        content="Ejen dipanggil untuk lapor diri! Tarikh: 15 Feb 2026. Lokasi: Teratak Melana. Jangan lambat!">
+    <meta property="og:image" content="https://kad-jemputan-hayraz.pages.dev/thumbnail.png">
+    <meta property="og:url" content="https://kad-jemputan-hayraz.pages.dev">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:image" content="https://kad-jemputan-hayraz.pages.dev/thumbnail.png">
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #0a0a0a;
+            overflow-x: hidden;
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+        }
+
+        /* Comic Halftone Pattern - Darker for V2 */
+        .halftone-bg {
+            background-image: radial-gradient(#333 20%, transparent 20%),
+                radial-gradient(#333 20%, transparent 20%);
+            background-color: #0a0a0a;
+            background-position: 0 0, 10px 10px;
+            background-size: 20px 20px;
+        }
+
+        .comic-border {
+            border: 3px solid #000;
+            box-shadow: 6px 6px 0px #000;
+        }
+
+        .comic-text-shadow {
+            text-shadow: 3px 3px 0px #000;
+        }
+
+        /* Glitch Effect */
+        .glitch {
+            position: relative;
+        }
+
+        .glitch::before,
+        .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-1 5s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim-1 {
+            0% {
+                clip: rect(30px, 9999px, 10px, 0);
+            }
+
+            100% {
+                clip: rect(80px, 9999px, 90px, 0);
+            }
+        }
+
+        @keyframes glitch-anim-2 {
+            0% {
+                clip: rect(10px, 9999px, 80px, 0);
+            }
+
+            100% {
+                clip: rect(90px, 9999px, 30px, 0);
+            }
+        }
+
+        /* Lightning Flash */
+        @keyframes flash {
+
+            0%,
+            100% {
+                opacity: 0;
+            }
+
+            5% {
+                opacity: 0.8;
+            }
+
+            10% {
+                opacity: 0;
+            }
+
+            15% {
+                opacity: 1;
+            }
+
+            30% {
+                opacity: 0;
+            }
+        }
+
+        .trigger-flash {
+            animation: flash 0.3s ease-out;
+        }
+
+        @keyframes strike {
+            0% {
+                opacity: 0;
+                transform: scaleY(0.5) translateX(0);
+            }
+
+            5% {
+                opacity: 1;
+                transform: scaleY(1) translateX(0);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scaleY(1) translateX(0);
+            }
+        }
+
+        .strike-animation {
+            animation: strike 0.5s linear;
+        }
+
+        /* Embers */
+        .ember {
+            position: absolute;
+            background: #ff6b00;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatUp 4s infinite linear;
+        }
+
+        @keyframes floatUp {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            20% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-10vh) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Lightning Bolts Container */
+        .bolts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .lightning-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 40;
+            mix-blend-mode: overlay;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #000;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #FEC601;
+        }
+    </style>
+</head>
+
+<body class="text-white">
+    <div id="root"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvix4lA_FgeVY_kgkO-pji11w9CCLeIh0",
+            authDomain: "hayrazmy.firebaseapp.com",
+            projectId: "hayrazmy",
+            storageBucket: "hayrazmy.firebasestorage.app",
+            messagingSenderId: "168798630030",
+            appId: "1:168798630030:web:27557546d86abd4dc499df"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // --- COMPONENTS ---
+
+        // YouTube Audio Player
+        // YouTube Audio Player
+        const YouTubeAudio = ({ videoId, isPlaying }) => {
+            const playerRef = useRef(null);
+
+            useEffect(() => {
+                const initPlayer = () => {
+                    if (window.YT && window.YT.Player) {
+                        if (playerRef.current) return; // Prevent double init
+                        playerRef.current = new window.YT.Player('yt-player', {
+                            height: '0',
+                            width: '0',
+                            videoId: videoId,
+                            playerVars: {
+                                'autoplay': 0, // Manual control
+                                'playsinline': 1,
+                                'controls': 0,
+                                'disablekb': 1,
+                                'fs': 0,
+                                'loop': 1,
+                                'modestbranding': 1,
+                                'playlist': videoId, // Required for loop
+                                'origin': window.location.origin
+                            },
+                            events: {
+                                'onReady': (event) => {
+                                    if (isPlaying) {
+                                        event.target.playVideo();
+                                        event.target.setVolume(50);
+                                    }
+                                },
+                                'onStateChange': (event) => {
+                                    // 0 = Ended, 1 = Playing, 2 = Paused
+                                    if (event.data === 0) {
+                                        event.target.playVideo(); // Force Loop manually if needed
+                                    }
+                                }
+                            }
+                        });
+                    }
+                };
+
+                if (!window.YT) {
+                    const tag = document.createElement('script');
+                    tag.src = "https://www.youtube.com/iframe_api";
+                    const firstScriptTag = document.getElementsByTagName('script')[0];
+                    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+                    window.onYouTubeIframeAPIReady = initPlayer;
+                } else {
+                    initPlayer();
+                }
+            }, [videoId]); // Re-init if videoId changes
+
+            useEffect(() => {
+                if (playerRef.current && typeof playerRef.current.playVideo === 'function') {
+                    if (isPlaying) {
+                        playerRef.current.playVideo();
+                    } else {
+                        playerRef.current.pauseVideo();
+                    }
+                }
+            }, [isPlaying]);
+
+            return <div id="yt-player" className="fixed top-0 left-0 w-0 h-0 overflow-hidden opacity-0 pointer-events-none"></div>;
+        };
+
+        const CountdownTimer = ({ targetDateISO }) => {
+            const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+
+            useEffect(() => {
+                const targetStr = targetDateISO || "2026-02-15T20:00:00";
+                const targetDate = new Date(targetStr).getTime();
+
+                const interval = setInterval(() => {
+                    const now = new Date().getTime();
+                    const distance = targetDate - now;
+
+                    if (distance < 0) {
+                        clearInterval(interval);
+                    } else {
+                        setTimeLeft({
+                            days: Math.floor(distance / (1000 * 60 * 60 * 24)),
+                            hours: Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                            minutes: Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)),
+                            seconds: Math.floor((distance % (1000 * 60)) / 1000)
+                        });
+                    }
+                }, 1000);
+
+                return () => clearInterval(interval);
+            }, [targetDateISO]);
+
+            return (
+                <div className="flex justify-center space-x-4 my-6">
+                    {Object.entries(timeLeft).map(([unit, value]) => (
+                        <div key={unit} className="text-center">
+                            <div className="bg-boboiboy-black border-2 border-boboiboy-yellow w-16 h-16 flex items-center justify-center rounded-lg shadow-[0_0_10px_#FEC601]">
+                                <span className="text-2xl font-comic text-white">{value}</span>
+                            </div>
+                            <span className="text-xs text-gray-400 uppercase mt-1 block">{unit}</span>
+                        </div>
+                    ))}
+                </div>
+            );
+        };
+
+        const GuestbookSection = () => {
+            const [wishes, setWishes] = useState([]);
+            const [name, setName] = useState("");
+            const [message, setMessage] = useState("");
+            const [isSubmitting, setIsSubmitting] = useState(false);
+
+            useEffect(() => {
+                const unsubscribe = db.collection("wishes")
+                    .orderBy("timestamp", "desc")
+                    .onSnapshot((snapshot) => {
+                        const wishesData = snapshot.docs.map(doc => ({
+                            id: doc.id,
+                            ...doc.data()
+                        }));
+                        setWishes(wishesData);
+                    }, (error) => {
+                        console.error("Error fetching wishes:", error);
+                    });
+
+                return () => unsubscribe();
+            }, []);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                if (!name || !message) return;
+
+                setIsSubmitting(true);
+                try {
+                    await db.collection("wishes").add({
+                        name: name,
+                        message: message,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    setName("");
+                    setMessage("");
+                    alert("Ucapan misi berjaya dihantar! Terima kasih Ejen.");
+                } catch (error) {
+                    console.error("Error adding wish: ", error);
+                    alert("Ralat sistem! Sila cuba lagi.");
+                } finally {
+                    setIsSubmitting(false);
+                }
+            };
+
+            return (
+                <section className="py-16 px-4 bg-boboiboy-black relative border-t-4 border-boboiboy-yellow">
+                    <h2 className="text-3xl font-comic text-center text-boboiboy-yellow mb-8 comic-text-shadow">
+                        MISI: TINGGALKAN JEJAK
+                    </h2>
+
+                    <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4 mb-12 bg-gray-900 p-6 rounded-lg border-2 border-gray-700">
+                        <div>
+                            <label className="block text-boboiboy-orange font-comic mb-1">NAMA EJEN</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full bg-black text-white border-2 border-gray-600 p-2 rounded focus:border-boboiboy-yellow focus:outline-none"
+                                placeholder="Cth: Ejen Ali"
+                                maxLength="30"
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-boboiboy-orange font-comic mb-1">UCAPAN MISI</label>
+                            <textarea
+                                value={message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                className="w-full bg-black text-white border-2 border-gray-600 p-2 rounded h-24 focus:border-boboiboy-yellow focus:outline-none"
+                                placeholder="Tulis ucapan power korang kat sini..."
+                                maxLength="200"
+                            ></textarea>
+                        </div>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className={`w-full text-white font-bold py-3 px-6 rounded border-2 border-white shadow-[4px_4px_0px_#fff] transform transition ${isSubmitting ? 'bg-gray-600 cursor-not-allowed' : 'bg-boboiboy-red hover:bg-red-700 active:translate-y-1 active:shadow-none'}`}
+                        >
+                            {isSubmitting ? "MENGHANTAR DATA..." : "HANTAR DATA"}
+                        </button>
+                    </form>
+
+                    <div className="max-w-md mx-auto space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                        {wishes.length === 0 ? (
+                            <p className="text-center text-gray-500 font-mono italic">Belum ada data... Jadilah yang pertama!</p>
+                        ) : (
+                            wishes.map((wish) => (
+                                <div key={wish.id} className="bg-white text-black p-4 rounded-lg shadow-lg border-l-8 border-boboiboy-blue transform transition hover:scale-102">
+                                    <div className="flex items-center space-x-2 mb-2">
+                                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                            <i className="fas fa-user-astronaut text-gray-600"></i>
+                                        </div>
+                                        <span className="font-comic text-lg uppercase font-bold text-boboiboy-blue">{wish.name}</span>
+                                    </div>
+                                    <p className="font-mono text-sm text-gray-800 break-words">"{wish.message}"</p>
+                                </div>
+                            ))
+                        )}
+                    </div>
+                </section>
+            );
+        };
+
+        const MusicPlayer = ({ isPlaying, toggleMusic }) => {
+            return (
+                <button
+                    onClick={toggleMusic}
+                    className="fixed bottom-6 left-6 z-50 bg-boboiboy-yellow text-black p-4 rounded-full border-2 border-white shadow-[0_0_15px_#FEC601] hover:scale-110 transition-transform animate-pulse"
+                >
+                    {isPlaying ? <i className="fas fa-volume-up text-xl"></i> : <i className="fas fa-volume-mute text-xl"></i>}
+                </button>
+            );
+        };
+
+        const LightningEffect = () => {
+            const [flash, setFlash] = useState(false);
+            const [bolts, setBolts] = useState([]);
+
+            useEffect(() => {
+                const triggerLightning = () => {
+                    if (Math.random() > 0.7) {
+                        setFlash(true);
+                        setTimeout(() => setFlash(false), 150);
+                    }
+
+                    const id = Date.now() + Math.random();
+                    const newBolt = {
+                        id: id,
+                        left: Math.random() * 90 + 5,
+                        top: Math.random() * 30 - 10,
+                        scale: Math.random() * 0.8 + 0.6,
+                        rotation: Math.random() * 40 - 20
+                    };
+                    setBolts(prev => [...prev, newBolt]);
+                    setTimeout(() => setBolts(prev => prev.filter(b => b.id !== id)), 500);
+                };
+
+                let timeoutId;
+                const loop = () => {
+                    triggerLightning();
+                    timeoutId = setTimeout(loop, Math.random() * 1500 + 800);
+                };
+                loop();
+                return () => clearTimeout(timeoutId);
+            }, []);
+
+            return (
+                <div className="bolts-container">
+                    <div className={`lightning-overlay ${flash ? 'trigger-flash' : ''}`}></div>
+                    {bolts.map(bolt => (
+                        <svg key={bolt.id} className="absolute strike-animation"
+                            style={{ left: `${bolt.left}%`, top: `${bolt.top}%`, transform: `scale(${bolt.scale}) rotate(${bolt.rotation}deg)`, width: '150px', height: '300px' }}
+                            viewBox="0 0 100 200" fill="none">
+                            <path d="M40 0L0 80H30L10 200L100 70H60L90 0H40Z" fill="#FEC601" stroke="white" strokeWidth="2" filter="drop-shadow(0 0 10px #FEC601)" />
+                        </svg>
+                    ))}
+                </div>
+            );
+        };
+
+        const ParticleSystem = () => {
+            const [embers, setEmbers] = useState([]);
+
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    const id = Date.now();
+                    const size = Math.random() * 6 + 2;
+                    setEmbers(prev => [...prev.slice(-20), {
+                        id,
+                        left: Math.random() * 100,
+                        size,
+                        duration: Math.random() * 2 + 3
+                    }]);
+                }, 300);
+                return () => clearInterval(interval);
+            }, []);
+
+            return (
+                <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+                    {embers.map(ember => (
+                        <div key={ember.id} className="ember" style={{
+                            left: `${ember.left}%`,
+                            width: `${ember.size}px`,
+                            height: `${ember.size}px`,
+                            animationDuration: `${ember.duration}s`
+                        }} />
+                    ))}
+                </div>
+            );
+        };
+
+        const StartScreen = ({ onStart }) => {
+            return (
+                <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer" onClick={onStart}>
+                    <div className="absolute inset-0 halftone-bg opacity-30"></div>
+                    <div className="relative z-10 text-center space-y-6">
+                        <div className="w-24 h-24 mx-auto border-4 border-boboiboy-orange rounded-full flex items-center justify-center animate-spin-slow shadow-[0_0_30px_#FF6B00]">
+                            <i className="fas fa-fingerprint text-5xl text-boboiboy-yellow animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h1 className="text-3xl font-bold text-white tracking-widest glitch" data-text="ACCESS DENIED">
+                                SECURITY CHECK
+                            </h1>
+                            <p className="text-boboiboy-orange font-mono mt-2 text-sm animate-bounce">
+                                [ KLIK UNTUK SCAN ]
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const HeroSection = ({ config }) => {
+            const titleRef = useRef(null);
+
+            useEffect(() => {
+                if (titleRef.current) {
+                    gsap.fromTo(titleRef.current,
+                        { scale: 0.5, opacity: 0 },
+                        { scale: 1, opacity: 1, duration: 1.5, ease: "elastic.out(1, 0.3)" }
+                    );
+                }
+            }, []);
+
+            return (
+                <section
+                    className="relative min-h-screen flex flex-col items-center justify-center text-center p-4 overflow-hidden pt-0"
+                >
+                    <div className="relative z-20 w-full max-w-md -mt-12">
+                        {/* Text: Transparent bg, Clean Shadow */}
+                        <div className="mb-2 font-comic text-boboiboy-orange text-xl tracking-widest animate-pulse">
+                            {config.heroBanner}
+                        </div>
+
+                        <h1 ref={titleRef} className="text-7xl md:text-8xl font-comic text-boboiboy-yellow leading-none mb-6 uppercase" style={{ textShadow: '4px 4px 0 #000, -2px -2px 0 #FF6B00' }}>
+                            {config.heroTitle1}<br />{config.heroTitle2}
+                        </h1>
+
+                        <div className="my-4 relative perspective-1000">
+                            {/* Floating Animation for Image */}
+                            <div className="animate-float">
+                                <img
+                                    src={config.heroImage}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Hayraz&backgroundColor=ffdfbf&clothing=superhero";
+                                    }}
+                                    alt="Hayraz Mikyle"
+                                    className="relative w-72 h-72 object-cover mx-auto rounded-xl border-4 border-yellow-400 shadow-[0_0_30px_#FEC601] bg-gray-900"
+                                />
+                            </div>
+                            <div className="absolute -bottom-6 -right-2 bg-red-600 text-white font-comic text-3xl py-2 px-6 border-4 border-white transform rotate-6 shadow-lg">
+                                {config.heroSticker}
+                            </div>
+                        </div>
+
+                        <div className="mt-8 space-y-2">
+                            <p className="text-xl font-bold text-white font-comic tracking-wide">
+                                KUASA ELEMENTAL TELAH DIAKTIFKAN!
+                            </p>
+                            <p className="text-sm text-gray-400 font-mono animate-bounce mt-4">
+                                [ KLIK SKRIN UNTUK AKSES MISI ]
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const DetailsSection = ({ config }) => {
+            const details = [
+                { icon: "fa-calendar-alt", label: "TARIKH", value: config.eventDate, color: "text-blue-400" },
+                { icon: "fa-clock", label: "WAKTU", value: config.eventTime, color: "text-yellow-400" },
+                { icon: "fa-map-marker-alt", label: "LOKASI", value: config.eventLocation, color: "text-red-500" },
+            ];
+
+            return (
+                <section className="py-20 px-4 relative z-20 bg-black">
+                    <h2 className="text-4xl font-comic text-center text-white mb-2 tech-title" style={{ textShadow: '2px 2px 0 #FF6B00' }}>
+                        INFO MISI RAHSIA
+                    </h2>
+
+                    <CountdownTimer targetDateISO={config.targetDateISO} />
+
+                    <div className="max-w-md mx-auto space-y-4 mt-8">
+                        {details.map((item, idx) => (
+                            <div key={idx} className="bg-gray-900 border border-gray-700 p-6 flex items-center space-x-6 rounded-lg">
+                                <i className={`fas ${item.icon} ${item.color} text-3xl w-10 text-center`}></i>
+                                <div>
+                                    <p className="text-xs text-gray-500 font-mono tracking-widest mb-1">{item.label}</p>
+                                    <p className="text-2xl font-bold text-white uppercase font-comic tracking-wide">{item.value}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="text-center mt-8">
+                        <p className="text-boboiboy-yellow font-comic text-xl">
+                            "DATANG JANGAN TAK DATANG!"
+                        </p>
+                        <p className="text-white text-sm mt-2 font-mono">
+                            Kehadiran anda melengkapkan kuasa kami!
+                        </p>
+                    </div>
+                </section>
+            );
+        };
+
+        const VideoSection = ({ config }) => {
+            return (
+                <section className="py-16 px-4 relative">
+                    <div className="max-w-md mx-auto relative z-10 p-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-lg shadow-[0_0_20px_#ff0000]">
+                        <div className="bg-black p-4 rounded-md">
+                            <h2 className="text-3xl font-comic text-center text-white mb-6" style={{ textShadow: '2px 2px 0 #000' }}>
+                                {config.videoTitle}
+                            </h2>
+                            <div className="aspect-video bg-gray-800 flex items-center justify-center relative overflow-hidden group rounded-lg border-2 border-gray-700">
+                                <img
+                                    src={config.videoImage}
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Blizzard&backgroundColor=b6e3f4";
+                                    }}
+                                    alt="Video Thumbnail"
+                                    className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
+                                />
+                                <div className="z-10 bg-red-600/90 p-4 rounded-full group-hover:scale-110 transition-transform cursor-pointer shadow-xl">
+                                    <i className="fas fa-play text-3xl text-white pl-1"></i>
+                                </div>
+                            </div>
+                            <p className="text-center text-gray-400 text-xs mt-4 font-mono">
+                                KLIK PLAY UNTUK ANALISIS VIDEO
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            );
+        };
+
+        const WishesSection = () => {
+            const handleShare = async () => {
+                const shareData = {
+                    title: 'Misi Rahsia: Birthday Hayraz Mikyle!',
+                    text: 'Ejen, anda jemput hadir ke Misi Sambutan Hari Jadi Hayraz Mikyle yang ke-6! Klik link untuk info misi.',
+                    url: window.location.href
+                };
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share(shareData);
+                    } catch (err) {
+                        console.log('Error sharing:', err);
+                    }
+                } else {
+                    alert('Link disalin ke clipboard!');
+                    navigator.clipboard.writeText(window.location.href);
+                }
+            };
+
+            return (
+                <section className="py-20 px-4 text-center relative overflow-hidden">
+                    <h2 className="text-3xl font-comic text-yellow-400 mb-4">UCAPAN POWER</h2>
+                    <p className="text-gray-400 mb-8 max-w-xs mx-auto text-sm font-mono">
+                        "Antara kawan baik adalah kawan yang mendoakan kejayaan sahabatnya."
+                    </p>
+
+                    <div className="flex flex-col space-y-4 items-center">
+                        <button onClick={handleShare} className="w-64 inline-flex items-center justify-center space-x-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-full shadow-[0_0_15px_#2563eb] transition-all transform hover:-translate-y-1">
+                            <i className="fas fa-share-alt text-2xl"></i>
+                            <span className="font-comic text-lg">SEBARKAN MISI</span>
+                        </button>
+                    </div>
+                </section>
+            );
+        };
+
+        const Footer = ({ onLockClick }) => {
+            return (
+                <footer className="bg-black py-8 text-center border-t border-gray-800 relative">
+                    <p className="font-comic text-yellow-500 text-xl tracking-widest">TERBAIKKK!</p>
+                    <p className="text-xs text-gray-600 mt-2 font-mono">&copy; 2026 Markas Pengurusan Hayraz</p>
+                    <button onClick={onLockClick} className="opacity-20 hover:opacity-100 transition-opacity absolute bottom-4 right-4">
+                        <i className="fas fa-lock text-gray-600"></i>
+                    </button>
+                </footer>
+            );
+        };
+
+        const SectionWrapper = ({ children, onNext, isLast }) => {
+            return (
+                <div
+                    onClick={onNext}
+                    className={`cursor-pointer group relative ${!isLast ? 'hover:after:content-["â–¼"] hover:after:absolute hover:after:bottom-2 hover:after:left-1/2 hover:after:-translate-x-1/2 hover:after:text-white hover:after:animate-bounce hover:after:opacity-50' : ''}`}
+                >
+                    {children}
+                </div>
+            );
+        };
+
+        // --- ADMIN DASHBOARD COMPONENT (REBUILT) ---
+        const AdminDashboard = ({ isOpen, onClose, config, onUpdateConfig }) => {
+            const [isLoggedIn, setIsLoggedIn] = useState(false);
+            const [username, setUsername] = useState("");
+            const [password, setPassword] = useState("");
+            const [activeTab, setActiveTab] = useState("content");
+            const [localConfig, setLocalConfig] = useState({ ...config });
+            const [wishes, setWishes] = useState([]);
+
+            // Sync local config when prop changes
+            useEffect(() => {
+                setLocalConfig({ ...config });
+            }, [config]);
+
+            // Login Logic
+            const handleLogin = async (e) => {
+                e.preventDefault();
+                try {
+                    const doc = await db.collection("settings").doc("security").get();
+                    if (doc.exists) {
+                        const creds = doc.data();
+                        if (username === creds.username && password === creds.password) {
+                            setIsLoggedIn(true);
+                        } else {
+                            alert("Salah login credentials!");
+                        }
+                    } else {
+                        // Fallback
+                        if (username === "admin" && password === "admin1234") {
+                            await db.collection("settings").doc("security").set({ username: "admin", password: "admin1234" });
+                            setIsLoggedIn(true);
+                        } else {
+                            alert("Cuba default: admin / admin1234");
+                        }
+                    }
+                } catch (err) {
+                    console.error("Login Error:", err);
+                    alert("Database Error during login.");
+                }
+            };
+
+            // Fetch Wishes
+            useEffect(() => {
+                let unsubscribe;
+                if (isLoggedIn && activeTab === "wishes") {
+                    unsubscribe = db.collection("wishes").orderBy("timestamp", "desc").onSnapshot(snap => {
+                        const loadedWishes = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                        setWishes(loadedWishes);
+                    });
+                }
+                return () => {
+                    if (unsubscribe) unsubscribe();
+                };
+            }, [isLoggedIn, activeTab]);
+
+            // Save Config
+            const handleSave = async () => {
+                try {
+                    await db.collection("site_config").doc("main").set(localConfig, { merge: true });
+                    onUpdateConfig(localConfig);
+                    alert("Berjaya disimpan!");
+                } catch (err) {
+                    console.error("Save Error:", err);
+                    alert("Gagal menyimpan config.");
+                }
+            };
+
+            // Delete Wish
+            const handleDeleteWish = async (id) => {
+                if (confirm("Padam ucapan ini?")) {
+                    try {
+                        await db.collection("wishes").doc(id).delete();
+                    } catch (err) {
+                        console.error("Delete Error:", err);
+                        alert("Gagal memadam ucapan.");
+                    }
+                }
+            };
+
+            // Update Security
+            const handleUpdateSecurity = async (e) => {
+                e.preventDefault();
+                const newU = e.target.newUsername.value;
+                const newP = e.target.newPassword.value;
+                if (newU && newP) {
+                    try {
+                        await db.collection("settings").doc("security").set({ username: newU, password: newP });
+                        alert("Security credentials updated!");
+                        e.target.reset();
+                    } catch (err) {
+                        console.error("Security Update Error:", err);
+                        alert("Gagal update security.");
+                    }
+                }
+            };
+
+            if (!isOpen) return null;
+
+            return (
+                <div className="fixed inset-0 z-[9999] bg-black/95 flex items-center justify-center p-4 backdrop-blur-sm">
+                    <div className="bg-gray-900 border-2 border-boboiboy-orange w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-[0_0_50px_rgba(255,107,0,0.5)] relative flex flex-col">
+
+                        {/* Header */}
+                        <div className="p-4 border-b border-gray-800 flex justify-between items-center bg-gray-900/50 sticky top-0 z-10">
+                            <h2 className="text-2xl font-comic text-boboiboy-yellow">ADMIN PANEL v2.0</h2>
+                            <button onClick={onClose} className="text-gray-400 hover:text-white transition-colors">
+                                <i className="fas fa-times text-2xl"></i>
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6 flex-1 overflow-y-auto">
+                            {!isLoggedIn ? (
+                                <div className="flex flex-col items-center justify-center h-full min-h-[300px]">
+                                    <h3 className="text-xl text-white mb-6 font-mono">SEGURITY CHECK</h3>
+                                    <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
+                                        <input
+                                            type="text"
+                                            placeholder="Username"
+                                            className="w-full p-3 bg-black border border-gray-700 text-white rounded focus:border-boboiboy-orange focus:outline-none"
+                                            value={username}
+                                            onChange={e => setUsername(e.target.value)}
+                                        />
+                                        <input
+                                            type="password"
+                                            placeholder="Password"
+                                            className="w-full p-3 bg-black border border-gray-700 text-white rounded focus:border-boboiboy-orange focus:outline-none"
+                                            value={password}
+                                            onChange={e => setPassword(e.target.value)}
+                                        />
+                                        <button type="submit" className="w-full bg-boboiboy-red py-3 text-white font-bold rounded hover:bg-red-700 transition-colors">
+                                            LOGIN
+                                        </button>
+                                    </form>
+                                </div>
+                            ) : (
+                                <div>
+                                    {/* Tabs */}
+                                    <div className="flex flex-wrap gap-2 mb-6">
+                                        {['content', 'media', 'wishes', 'security'].map(tab => (
+                                            <button
+                                                key={tab}
+                                                onClick={() => setActiveTab(tab)}
+                                                className={`px-4 py-2 rounded font-bold uppercase text-sm transition-colors ${activeTab === tab
+                                                        ? 'bg-boboiboy-orange text-black'
+                                                        : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                                                    }`}
+                                            >
+                                                {tab}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Tab Content */}
+                                    <div className="space-y-6">
+                                        {activeTab === 'content' && (
+                                            <div className="grid grid-cols-1 gap-4">
+                                                <div className="bg-gray-800/50 p-4 rounded border border-gray-700">
+                                                    <h4 className="text-boboiboy-blue font-bold mb-4">Text Configuration</h4>
+                                                    <div className="space-y-4">
+                                                        <div><label className="block text-xs text-gray-500 mb-1">Page Title</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.pageTitle || ''} onChange={e => setLocalConfig({ ...localConfig, pageTitle: e.target.value })} /></div>
+                                                        <div><label className="block text-xs text-gray-500 mb-1">Top Banner</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.heroBanner || ''} onChange={e => setLocalConfig({ ...localConfig, heroBanner: e.target.value })} /></div>
+                                                        <div className="grid grid-cols-2 gap-2">
+                                                            <div><label className="block text-xs text-gray-500 mb-1">Hero Title 1</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.heroTitle1 || ''} onChange={e => setLocalConfig({ ...localConfig, heroTitle1: e.target.value })} /></div>
+                                                            <div><label className="block text-xs text-gray-500 mb-1">Hero Title 2</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.heroTitle2 || ''} onChange={e => setLocalConfig({ ...localConfig, heroTitle2: e.target.value })} /></div>
+                                                        </div>
+                                                        <div><label className="block text-xs text-gray-500 mb-1">Sticker Text</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.heroSticker || ''} onChange={e => setLocalConfig({ ...localConfig, heroSticker: e.target.value })} /></div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="bg-gray-800/50 p-4 rounded border border-gray-700">
+                                                    <h4 className="text-boboiboy-blue font-bold mb-4">Event Details</h4>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        <div><label className="block text-xs text-gray-500 mb-1">Date Display</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.eventDate || ''} onChange={e => setLocalConfig({ ...localConfig, eventDate: e.target.value })} /></div>
+                                                        <div><label className="block text-xs text-gray-500 mb-1">Time Display</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.eventTime || ''} onChange={e => setLocalConfig({ ...localConfig, eventTime: e.target.value })} /></div>
+                                                        <div className="md:col-span-2"><label className="block text-xs text-gray-500 mb-1">Location</label><input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.eventLocation || ''} onChange={e => setLocalConfig({ ...localConfig, eventLocation: e.target.value })} /></div>
+                                                        <div className="md:col-span-2"><label className="block text-xs text-gray-500 mb-1">Target Date (ISO)</label><input type="datetime-local" className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.targetDateISO || ''} onChange={e => setLocalConfig({ ...localConfig, targetDateISO: e.target.value })} /></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'media' && (
+                                            <div className="space-y-4">
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Hero Image URL</label>
+                                                    <input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.heroImage || ''} onChange={e => setLocalConfig({ ...localConfig, heroImage: e.target.value })} />
+                                                    {localConfig.heroImage && <img src={localConfig.heroImage} alt="Preview" className="h-20 mt-2 rounded border border-gray-700 object-contain" />}
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Video Section Title</label>
+                                                    <input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.videoTitle || ''} onChange={e => setLocalConfig({ ...localConfig, videoTitle: e.target.value })} />
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">Video Thumbnail URL</label>
+                                                    <input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.videoImage || ''} onChange={e => setLocalConfig({ ...localConfig, videoImage: e.target.value })} />
+                                                    {localConfig.videoImage && <img src={localConfig.videoImage} alt="Preview" className="h-20 mt-2 rounded border border-gray-700 object-contain" />}
+                                                </div>
+
+                                                <div>
+                                                    <label className="block text-xs text-gray-500 mb-1">YouTube Audio ID</label>
+                                                    <input className="w-full bg-black border border-gray-700 p-2 rounded text-white" value={localConfig.audioUrl || ''} onChange={e => setLocalConfig({ ...localConfig, audioUrl: e.target.value })} />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'wishes' && (
+                                            <div className="space-y-4">
+                                                <div className="bg-gray-800 p-2 rounded text-center text-sm text-gray-400">
+                                                    Total Wishes: {wishes.length}
+                                                </div>
+                                                <div className="max-h-[400px] overflow-y-auto space-y-2">
+                                                    {wishes.map(wish => (
+                                                        <div key={wish.id} className="bg-black/50 p-3 rounded border border-gray-700 flex justify-between items-start group hover:border-boboiboy-orange transition-colors">
+                                                            <div>
+                                                                <div className="font-bold text-boboiboy-yellow">{wish.name}</div>
+                                                                <div className="text-sm text-gray-300 mt-1">{wish.message}</div>
+                                                                <div className="text-xs text-gray-600 mt-2 font-mono">{new Date(wish.timestamp?.seconds * 1000).toLocaleString()}</div>
+                                                            </div>
+                                                            <button onClick={() => handleDeleteWish(wish.id)} className="text-red-500 hover:text-red-400 p-2" title="Delete Wish">
+                                                                <i className="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                    {wishes.length === 0 && <p className="text-center text-gray-500 py-8">No wishes found.</p>}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {activeTab === 'security' && (
+                                            <div className="p-4 bg-red-900/10 border border-red-900/50 rounded-lg">
+                                                <h4 className="text-red-500 font-bold mb-4"><i className="fas fa-shield-alt mr-2"></i>Admin Credentials</h4>
+                                                <form onSubmit={handleUpdateSecurity} className="space-y-4">
+                                                    <div>
+                                                        <label className="block text-xs text-gray-400 mb-1">New Username</label>
+                                                        <input name="newUsername" type="text" className="w-full bg-black border border-gray-700 p-2 rounded text-white" required />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-xs text-gray-400 mb-1">New Password</label>
+                                                        <input name="newPassword" type="password" className="w-full bg-black border border-gray-700 p-2 rounded text-white" required />
+                                                    </div>
+                                                    <button type="submit" className="bg-gray-700 text-white px-6 py-2 rounded hover:bg-gray-600 transition-colors">
+                                                        Update Credentials
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Action Buttons */}
+                                    {(activeTab === 'content' || activeTab === 'media') && (
+                                        <div className="sticky bottom-0 bg-gray-900 pt-4 mt-6 border-t border-gray-800 flex justify-end">
+                                            <button onClick={handleSave} className="bg-green-600 hover:bg-green-500 text-white px-8 py-3 rounded font-bold shadow-lg transition-transform transform active:scale-95">
+                                                <i className="fas fa-save mr-2"></i> SAVE CHANGES
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [hasStarted, setHasStarted] = useState(false);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [showAdmin, setShowAdmin] = useState(false);
+            const [lockClicks, setLockClicks] = useState(0);
+
+            // CONFIG STATE
+            const [config, setConfig] = useState({
+                heroBanner: "MISI: MAKAN-MAKAN!",
+                heroTitle1: "HAYRAZ",
+                heroTitle2: "MIKYLE",
+                heroImage: "https://static.wikia.nocookie.net/boboiboy/images/1/13/BoBoiBoy_Movie_2_on_Astro_First.jpg/revision/latest",
+                heroSticker: "6 TAHUN!",
+                eventDate: "15 FEB 2026",
+                eventTime: "8.00 MALAM",
+                eventLocation: "TERATAK MELANA",
+                targetDateISO: "2026-02-15T20:00:00",
+                videoTitle: "DATA PERISIKAN",
+                videoImage: "https://static.wikia.nocookie.net/boboiboy/images/7/76/BoBoiBoy_Blizzard_1.png/revision/latest",
+                pageTitle: "Jemputan Hari Jadi - Misi Boboiboy",
+                audioUrl: "h7l4b7nQ_BA" // Boboiboy Theme Song ID
+            });
+
+            const heroRef = useRef(null);
+            const detailsRef = useRef(null);
+            const videoRef = useRef(null);
+            const guestbookRef = useRef(null);
+
+            // Fetch Config on Mount
+            useEffect(() => {
+                const fetchConfig = async () => {
+                    const doc = await db.collection("site_config").doc("main").get();
+                    if (doc.exists) {
+                        setConfig(prev => ({ ...prev, ...doc.data() }));
+                    } else {
+                        // init default
+                        await db.collection("site_config").doc("main").set(config);
+                    }
+
+                    // Init Security if missing
+                    const sec = await db.collection("settings").doc("security").get();
+                    if (!sec.exists) {
+                        await db.collection("settings").doc("security").set({ username: "admin", password: "admin1234" });
+                    }
+                };
+                fetchConfig();
+            }, []);
+
+            // Update Page Title
+            useEffect(() => {
+                document.title = config.pageTitle;
+            }, [config.pageTitle]);
+
+            const handleStart = () => {
+                setHasStarted(true);
+                setIsPlaying(true); // Triggers YouTube AutoPlay
+            };
+
+            const handleMusicToggle = () => {
+                setIsPlaying(!isPlaying);
+            };
+
+            const scrollToSection = (ref) => {
+                if (ref && ref.current) {
+                    ref.current.scrollIntoView({ behavior: 'smooth' });
+                }
+            };
+
+            const handleLockClick = () => {
+                const newClicks = lockClicks + 1;
+                setLockClicks(newClicks);
+                if (newClicks >= 3) {
+                    setShowAdmin(true);
+                    setLockClicks(0); // Reset clicks after opening admin
+                }
+            };
+
+            return (
+                <div className="min-h-screen relative font-body selection:bg-yellow-500 selection:text-black bg-[#0a0a0a]">
+                    {!hasStarted ? (
+                        <StartScreen onStart={handleStart} />
+                    ) : (
+                        <div className="animate-fade-in relative">
+                            {/* Background Effects */}
+                            <div className="halftone-bg fixed inset-0 opacity-20 pointer-events-none"></div>
+                            <LightningEffect />
+                            <ParticleSystem />
+
+                            {/* Main Content with Sequential Scrolling */}
+
+                            <div ref={heroRef}>
+                                <SectionWrapper onNext={() => scrollToSection(detailsRef)}>
+                                    <HeroSection config={config} />
+                                </SectionWrapper>
+                            </div>
+
+                            <div ref={detailsRef}>
+                                <SectionWrapper onNext={() => scrollToSection(videoRef)}>
+                                    <DetailsSection config={config} />
+                                </SectionWrapper>
+                            </div>
+
+                            <div ref={videoRef}>
+                                <SectionWrapper onNext={() => scrollToSection(guestbookRef)}>
+                                    <VideoSection config={config} />
+                                </SectionWrapper>
+                            </div>
+
+                            <div ref={guestbookRef}>
+                                <GuestbookSection />
+                            </div>
+
+                            <WishesSection />
+
+                            <Footer onLockClick={handleLockClick} />
+
+                            <MusicPlayer isPlaying={isPlaying} toggleMusic={handleMusicToggle} />
+
+                            <AdminDashboard
+                                isOpen={showAdmin}
+                                onClose={() => setShowAdmin(false)}
+                                config={config}
+                                onUpdateConfig={setConfig}
+                            />
+
+                            {/* Hidden YouTube Player */}
+                            <YouTubeAudio videoId={config.audioUrl || "h7l4b7nQ_BA"} isPlaying={isPlaying} />
+                        </div>
+                    )}
+                </div>
+            );
+        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
