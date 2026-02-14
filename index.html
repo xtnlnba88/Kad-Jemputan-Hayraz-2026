@@ -692,6 +692,8 @@
         };
 
         const WishesSection = () => {
+            const wishesLink = "https://wa.me/?text=Selamat%20Hari%20Jadi%20Hayraz!%20Semoga%20terus%20Power!%20%F0%9F%8E%89";
+
             const handleShare = async () => {
                 const shareData = {
                     title: 'Misi Rahsia: Birthday Hayraz Mikyle!',
@@ -719,6 +721,11 @@
                     </p>
 
                     <div className="flex flex-col space-y-4 items-center">
+                        <a href={wishesLink} target="_blank" className="w-64 inline-flex items-center justify-center space-x-3 bg-green-600 hover:bg-green-500 text-white font-bold py-3 px-6 rounded-full shadow-[0_0_15px_#22c55e] transition-all transform hover:-translate-y-1">
+                            <i className="fab fa-whatsapp text-2xl"></i>
+                            <span className="font-comic text-lg">HANTAR UCAPAN</span>
+                        </a>
+
                         <button onClick={handleShare} className="w-64 inline-flex items-center justify-center space-x-3 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-6 rounded-full shadow-[0_0_15px_#2563eb] transition-all transform hover:-translate-y-1">
                             <i className="fas fa-share-alt text-2xl"></i>
                             <span className="font-comic text-lg">SEBARKAN MISI</span>
@@ -956,9 +963,10 @@
                 videoTitle: "DATA PERISIKAN",
                 videoImage: "https://static.wikia.nocookie.net/boboiboy/images/7/76/BoBoiBoy_Blizzard_1.png/revision/latest",
                 pageTitle: "Jemputan Hari Jadi - Misi Boboiboy",
-                audioUrl: "h7l4b7nQ_BA" // Boboiboy Theme Song ID
+                audioUrl: "h7l4b7nQ_BA"
             });
 
+            const audioRef = useRef(null);
             const heroRef = useRef(null);
             const detailsRef = useRef(null);
             const videoRef = useRef(null);
@@ -991,10 +999,19 @@
 
             const handleStart = () => {
                 setHasStarted(true);
-                setIsPlaying(true); // Triggers YouTube AutoPlay
+                setIsPlaying(true);
+                if (audioRef.current) {
+                    audioRef.current.volume = 0.5;
+                    audioRef.current.play().catch(e => console.log("Audio Error:", e));
+                }
             };
 
             const handleMusicToggle = () => {
+                if (isPlaying) {
+                    audioRef.current.pause();
+                } else {
+                    audioRef.current.play();
+                }
                 setIsPlaying(!isPlaying);
             };
 
@@ -1009,7 +1026,7 @@
                 setLockClicks(newClicks);
                 if (newClicks >= 3) {
                     setShowAdmin(true);
-                    setLockClicks(0);
+                    setLockClicks(0); // Reset clicks after opening admin
                 }
             };
 
@@ -1060,16 +1077,18 @@
                                 config={config}
                                 onUpdateConfig={setConfig}
                             />
-
-                            {/* Hidden YouTube Player */}
-                            <YouTubeAudio videoId={config.audioUrl || "h7l4b7nQ_BA"} isPlaying={isPlaying} />
                         </div>
                     )}
+
+                    <audio ref={audioRef} loop>
+                        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+                    </audio>
                 </div>
             );
         };
-            const root = ReactDOM.createRoot(document.getElementById('root'));
-            root.render(<App />);
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
+
 </html>
