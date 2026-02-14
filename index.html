@@ -271,11 +271,12 @@
 
         // --- NEW COMPONENTS ---
 
-        const CountdownTimer = () => {
+        const CountdownTimer = ({ targetDateISO }) => {
             const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
 
             useEffect(() => {
-                const targetDate = new Date("2026-02-15T20:00:00").getTime();
+                const targetStr = targetDateISO || "2026-02-15T20:00:00";
+                const targetDate = new Date(targetStr).getTime();
 
                 const interval = setInterval(() => {
                     const now = new Date().getTime();
@@ -294,7 +295,7 @@
                 }, 1000);
 
                 return () => clearInterval(interval);
-            }, []);
+            }, [targetDateISO]);
 
             return (
                 <div className="flex justify-center space-x-4 my-6">
@@ -526,14 +527,16 @@
             );
         };
 
-        const HeroSection = () => {
+        const HeroSection = ({ config }) => {
             const titleRef = useRef(null);
 
             useEffect(() => {
-                gsap.fromTo(titleRef.current,
-                    { scale: 0.5, opacity: 0 },
-                    { scale: 1, opacity: 1, duration: 1.5, ease: "elastic.out(1, 0.3)" }
-                );
+                if (titleRef.current) {
+                    gsap.fromTo(titleRef.current,
+                        { scale: 0.5, opacity: 0 },
+                        { scale: 1, opacity: 1, duration: 1.5, ease: "elastic.out(1, 0.3)" }
+                    );
+                }
             }, []);
 
             return (
@@ -543,18 +546,18 @@
                     <div className="relative z-20 w-full max-w-md -mt-12">
                         {/* Text: Transparent bg, Clean Shadow */}
                         <div className="mb-2 font-comic text-boboiboy-orange text-xl tracking-widest animate-pulse">
-                            MISI: MAKAN-MAKAN!
+                            {config.heroBanner}
                         </div>
 
                         <h1 ref={titleRef} className="text-7xl md:text-8xl font-comic text-boboiboy-yellow leading-none mb-6 uppercase" style={{ textShadow: '4px 4px 0 #000, -2px -2px 0 #FF6B00' }}>
-                            HAYRAZ<br />MIKYLE
+                            {config.heroTitle1}<br />{config.heroTitle2}
                         </h1>
 
                         <div className="my-4 relative perspective-1000">
                             {/* Floating Animation for Image */}
                             <div className="animate-float">
                                 <img
-                                    src="https://static.wikia.nocookie.net/boboiboy/images/1/13/BoBoiBoy_Movie_2_on_Astro_First.jpg/revision/latest"
+                                    src={config.heroImage}
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Hayraz&backgroundColor=ffdfbf&clothing=superhero";
@@ -564,7 +567,7 @@
                                 />
                             </div>
                             <div className="absolute -bottom-6 -right-2 bg-red-600 text-white font-comic text-3xl py-2 px-6 border-4 border-white transform rotate-6 shadow-lg">
-                                6 TAHUN!
+                                {config.heroSticker}
                             </div>
                         </div>
 
@@ -581,11 +584,11 @@
             );
         };
 
-        const DetailsSection = () => {
+        const DetailsSection = ({ config }) => {
             const details = [
-                { icon: "fa-calendar-alt", label: "TARIKH", value: "15 FEB 2026", color: "text-blue-400" },
-                { icon: "fa-clock", label: "WAKTU", value: "8.00 MALAM", color: "text-yellow-400" },
-                { icon: "fa-map-marker-alt", label: "LOKASI", value: "TERATAK MELANA", color: "text-red-500" },
+                { icon: "fa-calendar-alt", label: "TARIKH", value: config.eventDate, color: "text-blue-400" },
+                { icon: "fa-clock", label: "WAKTU", value: config.eventTime, color: "text-yellow-400" },
+                { icon: "fa-map-marker-alt", label: "LOKASI", value: config.eventLocation, color: "text-red-500" },
             ];
 
             return (
@@ -594,7 +597,7 @@
                         INFO MISI RAHSIA
                     </h2>
 
-                    <CountdownTimer />
+                    <CountdownTimer targetDateISO={config.targetDateISO} />
 
                     <div className="max-w-md mx-auto space-y-4 mt-8">
                         {details.map((item, idx) => (
@@ -620,22 +623,22 @@
             );
         };
 
-        const VideoSection = () => {
+        const VideoSection = ({ config }) => {
             return (
                 <section className="py-16 px-4 relative">
                     <div className="max-w-md mx-auto relative z-10 p-1 bg-gradient-to-r from-red-600 to-orange-500 rounded-lg shadow-[0_0_20px_#ff0000]">
                         <div className="bg-black p-4 rounded-md">
                             <h2 className="text-3xl font-comic text-center text-white mb-6" style={{ textShadow: '2px 2px 0 #000' }}>
-                                DATA PERISIKAN
+                                {config.videoTitle}
                             </h2>
                             <div className="aspect-video bg-gray-800 flex items-center justify-center relative overflow-hidden group rounded-lg border-2 border-gray-700">
                                 <img
-                                    src="https://static.wikia.nocookie.net/boboiboy/images/7/76/BoBoiBoy_Blizzard_1.png/revision/latest"
+                                    src={config.videoImage}
                                     onError={(e) => {
                                         e.target.onerror = null;
                                         e.target.src = "https://api.dicebear.com/9.x/micah/svg?seed=Blizzard&backgroundColor=b6e3f4";
                                     }}
-                                    alt="Boboiboy Blizzard"
+                                    alt="Video Thumbnail"
                                     className="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-80 transition-opacity"
                                 />
                                 <div className="z-10 bg-red-600/90 p-4 rounded-full group-hover:scale-110 transition-transform cursor-pointer shadow-xl">
@@ -695,11 +698,14 @@
             );
         };
 
-        const Footer = () => {
+        const Footer = ({ onLockClick }) => {
             return (
-                <footer className="bg-black py-8 text-center border-t border-gray-800">
+                <footer className="bg-black py-8 text-center border-t border-gray-800 relative">
                     <p className="font-comic text-yellow-500 text-xl tracking-widest">TERBAIKKK!</p>
                     <p className="text-xs text-gray-600 mt-2 font-mono">&copy; 2026 Markas Pengurusan Hayraz</p>
+                    <button onClick={onLockClick} className="opacity-20 hover:opacity-100 transition-opacity absolute bottom-4 right-4">
+                        <i className="fas fa-lock text-gray-600"></i>
+                    </button>
                 </footer>
             );
         };
@@ -719,13 +725,55 @@
         const App = () => {
             const [hasStarted, setHasStarted] = useState(false);
             const [isPlaying, setIsPlaying] = useState(false);
-            const audioRef = useRef(null);
+            const [showAdmin, setShowAdmin] = useState(false);
+            const [lockClicks, setLockClicks] = useState(0);
 
-            // Refs for each section
+            // CONFIG STATE
+            const [config, setConfig] = useState({
+                heroBanner: "MISI: MAKAN-MAKAN!",
+                heroTitle1: "HAYRAZ",
+                heroTitle2: "MIKYLE",
+                heroImage: "https://static.wikia.nocookie.net/boboiboy/images/1/13/BoBoiBoy_Movie_2_on_Astro_First.jpg/revision/latest",
+                heroSticker: "6 TAHUN!",
+                eventDate: "15 FEB 2026",
+                eventTime: "8.00 MALAM",
+                eventLocation: "TERATAK MELANA",
+                targetDateISO: "2026-02-15T20:00:00",
+                videoTitle: "DATA PERISIKAN",
+                videoImage: "https://static.wikia.nocookie.net/boboiboy/images/7/76/BoBoiBoy_Blizzard_1.png/revision/latest",
+                pageTitle: "Jemputan Hari Jadi - Misi Boboiboy"
+            });
+
+            const audioRef = useRef(null);
             const heroRef = useRef(null);
             const detailsRef = useRef(null);
             const videoRef = useRef(null);
             const guestbookRef = useRef(null);
+
+            // Fetch Config on Mount
+            useEffect(() => {
+                const fetchConfig = async () => {
+                    const doc = await db.collection("site_config").doc("main").get();
+                    if (doc.exists) {
+                        setConfig(prev => ({ ...prev, ...doc.data() }));
+                    } else {
+                        // init default
+                        await db.collection("site_config").doc("main").set(config);
+                    }
+
+                    // Init Security if missing
+                    const sec = await db.collection("settings").doc("security").get();
+                    if (!sec.exists) {
+                        await db.collection("settings").doc("security").set({ username: "admin", password: "admin1234" });
+                    }
+                };
+                fetchConfig();
+            }, []);
+
+            // Update Page Title
+            useEffect(() => {
+                document.title = config.pageTitle;
+            }, [config.pageTitle]);
 
             const handleStart = () => {
                 setHasStarted(true);
@@ -751,6 +799,15 @@
                 }
             };
 
+            const handleLockClick = () => {
+                const newClicks = lockClicks + 1;
+                setLockClicks(newClicks);
+                if (newClicks >= 3) {
+                    setShowAdmin(true);
+                    setLockClicks(0); // Reset clicks after opening admin
+                }
+            };
+
             return (
                 <div className="min-h-screen relative font-body selection:bg-yellow-500 selection:text-black bg-[#0a0a0a]">
                     {!hasStarted ? (
@@ -766,19 +823,19 @@
 
                             <div ref={heroRef}>
                                 <SectionWrapper onNext={() => scrollToSection(detailsRef)}>
-                                    <HeroSection />
+                                    <HeroSection config={config} />
                                 </SectionWrapper>
                             </div>
 
                             <div ref={detailsRef}>
                                 <SectionWrapper onNext={() => scrollToSection(videoRef)}>
-                                    <DetailsSection />
+                                    <DetailsSection config={config} />
                                 </SectionWrapper>
                             </div>
 
                             <div ref={videoRef}>
                                 <SectionWrapper onNext={() => scrollToSection(guestbookRef)}>
-                                    <VideoSection />
+                                    <VideoSection config={config} />
                                 </SectionWrapper>
                             </div>
 
@@ -786,9 +843,18 @@
                                 <GuestbookSection />
                             </div>
 
-                            <Footer />
+                            <WishesSection />
+
+                            <Footer onLockClick={handleLockClick} />
 
                             <MusicPlayer isPlaying={isPlaying} toggleMusic={handleMusicToggle} />
+
+                            <AdminDashboard
+                                isOpen={showAdmin}
+                                onClose={() => setShowAdmin(false)}
+                                config={config}
+                                onUpdateConfig={setConfig}
+                            />
                         </div>
                     )}
 
