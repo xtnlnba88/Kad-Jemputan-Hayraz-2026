@@ -1110,7 +1110,7 @@
                     if (doc.exists) {
                         const data = doc.data();
                         // HARD FIX: If database still has old image, clear it
-                        if (data.heroImage && data.heroImage.includes("wikia.nocookie.net/boboiboy/images/1/13")) {
+                        if (data.heroImage && (data.heroImage.includes("wikia.nocookie.net/boboiboy/images/1/13") || data.heroImage.includes("arleta.site"))) {
                             data.heroImage = "";
                         }
                         if (data.videoImage && data.videoImage.includes("wikia.nocookie.net/boboiboy/images/7/76")) {
