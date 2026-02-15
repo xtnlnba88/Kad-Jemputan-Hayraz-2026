@@ -1112,7 +1112,12 @@
                         const data = doc.data();
 
                         // HARD FIX: If database still has old image, clear it
-                        if (data.heroImage && (data.heroImage.includes("wikia.nocookie.net/boboiboy/images/1/13") || data.heroImage.includes("arleta.site"))) {
+                        const blockedImages = [
+                            "wikia.nocookie.net/boboiboy/images/1/13",
+                            "boboiboy-with-his-friends.png" // Specific file block only
+                        ];
+
+                        if (data.heroImage && blockedImages.some(url => data.heroImage.includes(url))) {
                             data.heroImage = "";
                         }
                         if (data.videoImage && data.videoImage.includes("wikia.nocookie.net/boboiboy/images/7/76")) {
