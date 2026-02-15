@@ -601,9 +601,14 @@
                                     />
                                 </div>
                             ) : (
-                                <div className="h-64 w-64 mx-auto flex items-center justify-center border-2 border-dashed border-gray-700 rounded-lg text-gray-500 font-mono text-sm animate-pulse">
-                                    [ TIADA GAMBAR ]
-                                </div>
+                                config.heroImage === null ? (
+                                    /* Loading state - show nothing or skeleton, prevents flash */
+                                    <div className="h-64 w-64 mx-auto"></div>
+                                ) : (
+                                    <div className="h-64 w-64 mx-auto flex items-center justify-center border-2 border-dashed border-gray-700 rounded-lg text-gray-500 font-mono text-sm animate-pulse">
+                                        [ TIADA GAMBAR ]
+                                    </div>
+                                )
                             )}
                             <div className="absolute -bottom-6 -right-2 bg-red-600 text-white font-comic text-3xl py-2 px-6 border-4 border-white transform rotate-6 shadow-lg">
                                 {config.heroSticker}
@@ -1087,7 +1092,7 @@
                 heroBanner: "MISI: MAKAN-MAKAN!",
                 heroTitle1: "HAYRAZ",
                 heroTitle2: "MIKYLE",
-                heroImage: "", // Empty to prevent flash of old image
+                heroImage: null, // Start as null to prevent flash (loading state)
                 heroSticker: "6 TAHUN!",
                 eventDate: "15 FEB 2026",
                 eventTime: "8.00 MALAM",
