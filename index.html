@@ -545,18 +545,39 @@
 
         const StartScreen = ({ onStart }) => {
             return (
-                <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer" onClick={onStart}>
+                <div className="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer p-6" onClick={onStart}>
                     <div className="absolute inset-0 halftone-bg opacity-30"></div>
-                    <div className="relative z-10 text-center space-y-6">
-                        <div className="w-24 h-24 mx-auto border-4 border-boboiboy-orange rounded-full flex items-center justify-center animate-spin-slow shadow-[0_0_30px_#FF6B00]">
-                            <i className="fas fa-fingerprint text-5xl text-boboiboy-yellow animate-pulse"></i>
-                        </div>
+
+                    <div className="relative z-10 text-center space-y-8 max-w-lg mx-auto animate-fade-in-up">
+                        {/* Intro Message */}
                         <div>
-                            <h1 className="text-3xl font-bold text-white tracking-widest glitch" data-text="ACCESS DENIED">
-                                SECURITY CHECK
+                            <h2 className="text-boboiboy-yellow font-comic text-xl md:text-2xl mb-3 animate-pulse tracking-wide">
+                                <i className="fas fa-exclamation-triangle mr-2"></i>
+                                DATA RAHSIA DITEMUI!
+                            </h2>
+                            <p className="text-gray-300 text-sm md:text-base leading-relaxed font-mono">
+                                Tahniah Ejen! Anda telah terpilih untuk menyertai satu misi khas:
+                            </p>
+                            <h1 className="text-white font-bold text-2xl md:text-3xl mt-2 font-comic text-shadow-orange">
+                                MISI SAMBUTAN HARI JADI<br />HAYRAZ MIKYLE
                             </h1>
-                            <p className="text-boboiboy-orange font-mono mt-2 text-sm animate-bounce">
-                                [ KLIK UNTUK SCAN ]
+                        </div>
+
+                        {/* Fingerprint Button */}
+                        <div className="relative group">
+                            <div className="absolute inset-0 bg-boboiboy-orange opacity-20 rounded-full blur-xl animate-pulse"></div>
+                            <div className="w-28 h-28 mx-auto border-4 border-boboiboy-orange rounded-full flex items-center justify-center animate-spin-slow shadow-[0_0_30px_#FF6B00] relative bg-black hover:scale-110 transition-transform duration-300">
+                                <i className="fas fa-fingerprint text-6xl text-boboiboy-yellow animate-pulse group-hover:text-white transition-colors"></i>
+                            </div>
+                        </div>
+
+                        {/* Action Prompt */}
+                        <div>
+                            <p className="text-boboiboy-orange font-mono text-xs animate-bounce border border-boboiboy-orange inline-block px-4 py-2 rounded uppercase tracking-widest bg-black/50 backdrop-blur-sm">
+                                [ TEKAN CAP JARI UNTUK AKSES KAD JEMPUTAN ]
+                            </p>
+                            <p className="text-gray-500 text-xs mt-2 font-mono">
+                                ID CODE: BDAY-MSN-006
                             </p>
                         </div>
                     </div>
