@@ -1105,12 +1105,12 @@
             const videoRef = useRef(null);
             const guestbookRef = useRef(null);
 
-            // Fetch Config on Mount
+            // Fetch Config on Mount (Real-time)
             useEffect(() => {
-                const fetchConfig = async () => {
-                    const doc = await db.collection("site_config").doc("main").get();
+                const unsubscribe = db.collection("site_config").doc("main").onSnapshot(doc => {
                     if (doc.exists) {
                         const data = doc.data();
+
                         // HARD FIX: If database still has old image, clear it
                         if (data.heroImage && (data.heroImage.includes("wikia.nocookie.net/boboiboy/images/1/13") || data.heroImage.includes("arleta.site"))) {
                             data.heroImage = "";
@@ -1118,19 +1118,24 @@
                         if (data.videoImage && data.videoImage.includes("wikia.nocookie.net/boboiboy/images/7/76")) {
                             data.videoImage = "";
                         }
+
                         setConfig(prev => ({ ...prev, ...data }));
                     } else {
-                        // init default
-                        await db.collection("site_config").doc("main").set(config);
+                        // init default if missing
+                        db.collection("site_config").doc("main").set(config);
                     }
+                });
 
-                    // Init Security if missing
+                // Init Security if missing
+                const checkSecurity = async () => {
                     const sec = await db.collection("settings").doc("security").get();
                     if (!sec.exists) {
                         await db.collection("settings").doc("security").set({ username: "admin", password: "admin1234" });
                     }
                 };
-                fetchConfig();
+                checkSecurity();
+
+                return () => unsubscribe();
             }, []);
 
             // Update Page Title
